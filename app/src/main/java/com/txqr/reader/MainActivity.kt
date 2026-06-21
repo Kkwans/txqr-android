@@ -97,7 +97,7 @@ class MainActivity : AppCompatActivity() {
                 if (decoder.isCompleted()) {
                     val data = decoder.dataBytes()
                     saveFile(data)
-                    statusText.text = "✅ 解码完成！已保存 ${formatSize(data.size)}"
+                    statusText.text = "✅ 解码完成！已保存 ${formatSize(data.size.toLong())}"
                     frameCountText.text = "唯一帧数: ${decoder.uniqueFrames()}"
                 } else {
                     val progress = decoder.progress()
@@ -112,7 +112,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun formatSize(bytes: Int): String {
+    private fun formatSize(bytes: Long): String {
         return when {
             bytes >= 1024 * 1024 -> "${bytes / 1024 / 1024} MB"
             bytes >= 1024 -> "${bytes / 1024} KB"
