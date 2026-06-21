@@ -45,6 +45,9 @@ dependencies {
     implementation "androidx.camera:camera-lifecycle:${camerax_version}"
     implementation "androidx.camera:camera-view:${camerax_version}"
 
-    // ML Kit Barcode Scanning (offline, no network needed)
+    // ML Kit Barcode Scanning (离线)
     implementation 'com.google.mlkit:barcode-scanning:17.2.0'
+
+    // gomobile 编译的 txqr 解码库
+    implementation files('libs/txqr.aar')
 }

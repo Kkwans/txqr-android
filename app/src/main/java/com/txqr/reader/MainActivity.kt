@@ -13,7 +13,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.txqr.reader.decoder.TxqrDecoder
+import mobile.Mobile
 import java.io.File
 import java.io.FileOutputStream
 import java.util.concurrent.ExecutorService
@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class MainActivity : AppCompatActivity() {
 
     private lateinit var cameraExecutor: ExecutorService
-    private lateinit var decoder: TxqrDecoder
+    private lateinit var decoder: mobile.Decoder
     private lateinit var statusText: TextView
     private lateinit var frameCountText: TextView
     private lateinit var previewView: PreviewView
@@ -44,7 +44,7 @@ class MainActivity : AppCompatActivity() {
         statusText = findViewById(R.id.statusText)
         frameCountText = findViewById(R.id.frameCountText)
 
-        decoder = TxqrDecoder()
+        decoder = Mobile.newDecoder()
         cameraExecutor = Executors.newSingleThreadExecutor()
 
         if (allPermissionsGranted()) {
@@ -98,11 +98,11 @@ class MainActivity : AppCompatActivity() {
                     val data = decoder.dataBytes()
                     saveFile(data)
                     statusText.text = "✅ 解码完成！已保存 ${formatSize(data.size)}"
-                    frameCountText.text = "唯一帧数: ${decoder.uniqueFrames()} | 数据块: ${decoder.sourceBlocksDecoded()}/${decoder.sourceBlocksTotal()}"
+                    frameCountText.text = "唯一帧数: ${decoder.uniqueFrames()}"
                 } else {
                     val progress = decoder.progress()
                     statusText.text = "⏳ 解码中: $progress% (已接收 ${decoder.uniqueFrames()} 帧)"
-                    frameCountText.text = "数据块: ${decoder.sourceBlocksDecoded()}/${decoder.sourceBlocksTotal()}"
+                    frameCountText.text = "总大小: ${formatSize(decoder.totalSize())}"
                 }
             }
         } catch (e: Exception) {
@@ -125,7 +125,6 @@ class MainActivity : AppCompatActivity() {
             val file = File(getExternalFilesDir(null), "decoded_file.tar.gz")
             FileOutputStream(file).use { it.write(data) }
             Toast.makeText(this, "文件已保存: ${file.absolutePath}", Toast.LENGTH_LONG).show()
-            Log.d(TAG, "文件已保存: ${file.absolutePath} (${data.size} 字节)")
         } catch (e: Exception) {
             Log.e(TAG, "保存失败: ${e.message}")
             Toast.makeText(this, "保存失败: ${e.message}", Toast.LENGTH_SHORT).show()

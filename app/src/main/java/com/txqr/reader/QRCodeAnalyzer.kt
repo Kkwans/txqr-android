@@ -12,8 +12,6 @@ class QRCodeAnalyzer(
 ) : ImageAnalysis.Analyzer {
 
     private val scanner = BarcodeScanning.getClient()
-    private var lastScannedContent: String? = null
-    private var frameCount = 0
 
     @SuppressLint("UnsafeOptInUsageError")
     override fun analyze(imageProxy: ImageProxy) {
@@ -24,21 +22,14 @@ class QRCodeAnalyzer(
             scanner.process(image)
                 .addOnSuccessListener { barcodes ->
                     for (barcode in barcodes) {
-                        if (barcode.valueType == Barcode.TYPE_TEXT ||
-                            barcode.valueType == Barcode.TYPE_URL ||
-                            barcode.rawValue != null
-                        ) {
-                            val content = barcode.rawValue ?: continue
-                            // txqr frames contain '|' separator
-                            if (content.contains("|")) {
-                                onQRCodeDetected(content)
-                            }
+                        val content = barcode.rawValue ?: continue
+                        // txqr 帧包含 | 分隔符
+                        if (content.contains("|")) {
+                            onQRCodeDetected(content)
                         }
                     }
                 }
-                .addOnFailureListener { e ->
-                    // Ignore scan failures
-                }
+                .addOnFailureListener { }
                 .addOnCompleteListener {
                     imageProxy.close()
                 }
