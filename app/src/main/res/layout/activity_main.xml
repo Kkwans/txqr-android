@@ -20,7 +20,7 @@
             android:id="@+id/statusText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Point camera at QR code animation"
+            android:text="将摄像头对准二维码动画"
             android:textColor="#FFFFFF"
             android:textSize="16sp" />
 
@@ -28,7 +28,7 @@
             android:id="@+id/frameCountText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Frames: 0"
+            android:text="数据块: 0/0"
             android:textColor="#AAAAAA"
             android:textSize="12sp"
             android:layout_marginTop="4dp" />

@@ -80,7 +80,7 @@ class MainActivity : AppCompatActivity() {
                 cameraProvider.unbindAll()
                 cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalysis)
             } catch (exc: Exception) {
-                Log.e(TAG, "Camera binding failed", exc)
+                Log.e(TAG, "相机绑定失败", exc)
             }
 
         }, ContextCompat.getMainExecutor(this))
@@ -97,18 +97,26 @@ class MainActivity : AppCompatActivity() {
                 if (decoder.isCompleted()) {
                     val data = decoder.dataBytes()
                     saveFile(data)
-                    statusText.text = "Done! Saved ${data.size} bytes"
-                    frameCountText.text = "Frames: ${decoder.uniqueFrames()}"
+                    statusText.text = "✅ 解码完成！已保存 ${formatSize(data.size)}"
+                    frameCountText.text = "唯一帧数: ${decoder.uniqueFrames()} | 数据块: ${decoder.sourceBlocksDecoded()}/${decoder.sourceBlocksTotal()}"
                 } else {
                     val progress = decoder.progress()
-                    statusText.text = "Progress: $progress% (frame ${decoder.uniqueFrames()})"
-                    frameCountText.text = "Source blocks: ${decoder.uniqueFrames()}/${decoder.totalSize()}"
+                    statusText.text = "⏳ 解码中: $progress% (已接收 ${decoder.uniqueFrames()} 帧)"
+                    frameCountText.text = "数据块: ${decoder.sourceBlocksDecoded()}/${decoder.sourceBlocksTotal()}"
                 }
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Decode error: ${e.message}")
+            Log.e(TAG, "解码错误: ${e.message}")
         } finally {
             isProcessing.set(false)
+        }
+    }
+
+    private fun formatSize(bytes: Int): String {
+        return when {
+            bytes >= 1024 * 1024 -> "${bytes / 1024 / 1024} MB"
+            bytes >= 1024 -> "${bytes / 1024} KB"
+            else -> "$bytes B"
         }
     }
 
@@ -116,11 +124,11 @@ class MainActivity : AppCompatActivity() {
         try {
             val file = File(getExternalFilesDir(null), "decoded_file.tar.gz")
             FileOutputStream(file).use { it.write(data) }
-            Toast.makeText(this, "Saved to: ${file.absolutePath}", Toast.LENGTH_LONG).show()
-            Log.d(TAG, "File saved: ${file.absolutePath} (${data.size} bytes)")
+            Toast.makeText(this, "文件已保存: ${file.absolutePath}", Toast.LENGTH_LONG).show()
+            Log.d(TAG, "文件已保存: ${file.absolutePath} (${data.size} 字节)")
         } catch (e: Exception) {
-            Log.e(TAG, "Save error: ${e.message}")
-            Toast.makeText(this, "Save failed: ${e.message}", Toast.LENGTH_SHORT).show()
+            Log.e(TAG, "保存失败: ${e.message}")
+            Toast.makeText(this, "保存失败: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -136,7 +144,7 @@ class MainActivity : AppCompatActivity() {
             if (allPermissionsGranted()) {
                 startCamera()
             } else {
-                Toast.makeText(this, "Camera permission required", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "需要摄像头权限才能扫描二维码", Toast.LENGTH_SHORT).show()
                 finish()
             }
         }
