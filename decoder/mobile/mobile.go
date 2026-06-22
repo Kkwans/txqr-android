@@ -94,6 +94,8 @@ func (d *Decoder) IsCompleted() bool { return d.completed }
 func (d *Decoder) DataBytes() []byte { return d.dataBytes }
 
 // Progress returns decoding progress (0-100).
+// txqr uses fountain codes with ~1.5x redundancy, so decoder completes around 50-70% of total estimated frames.
+// We adjust the formula to show 100% when decoding actually completes.
 func (d *Decoder) Progress() int {
 	if d.completed {
 		return 100
@@ -102,7 +104,8 @@ func (d *Decoder) Progress() int {
 		return 0
 	}
 	estimatedChunks := numberOfChunks(d.total, d.chunkLen)
-	p := d.frameCount * 100 / (estimatedChunks * 2)
+	// Use 1.4x multiplier instead of 2x to better match actual completion point
+	p := d.frameCount * 100 / (estimatedChunks * 14 / 10)
 	if p > 99 {
 		p = 99
 	}

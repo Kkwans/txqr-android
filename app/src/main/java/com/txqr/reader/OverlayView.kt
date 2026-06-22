@@ -11,40 +11,13 @@ class OverlayView @JvmOverloads constructor(
 ) : View(context, attrs) {
 
     private var barcodes: List<Barcode> = emptyList()
-    private var imageWidth = 0
-    private var imageHeight = 0
-    private var viewWidth = 0
-    private var viewHeight = 0
-    private var rotation = 0
-
     private var focusX = 0f
     private var focusY = 0f
     private var focusStartTime = 0L
     private val FOCUS_ANIM_MS = 800L
-
     private var lastDetectTime = 0L
     private val DETECT_HOLD_MS = 300L
 
-    private val fillPaint = Paint().apply {
-        color = Color.parseColor("#334CAF50")
-        style = Paint.Style.FILL
-        isAntiAlias = true
-    }
-    private val borderPaint = Paint().apply {
-        color = Color.parseColor("#4CAF50")
-        style = Paint.Style.STROKE
-        strokeWidth = 3f
-        isAntiAlias = true
-        strokeCap = Paint.Cap.ROUND
-        strokeJoin = Paint.Join.ROUND
-    }
-    private val cornerPaint = Paint().apply {
-        color = Color.parseColor("#FF9800")
-        style = Paint.Style.STROKE
-        strokeWidth = 5f
-        isAntiAlias = true
-        strokeCap = Paint.Cap.ROUND
-    }
     private val focusPaint = Paint().apply {
         color = Color.WHITE
         style = Paint.Style.STROKE
@@ -59,11 +32,6 @@ class OverlayView @JvmOverloads constructor(
         imgRotation: Int
     ) {
         barcodes = detected
-        imageWidth = imgW
-        imageHeight = imgH
-        viewWidth = vW
-        viewHeight = vH
-        rotation = imgRotation
         lastDetectTime = System.currentTimeMillis()
         invalidate()
     }
@@ -87,20 +55,17 @@ class OverlayView @JvmOverloads constructor(
 
         val now = System.currentTimeMillis()
 
+        // 绘制扫描区域参考框
         drawScanArea(canvas)
 
-        if (barcodes.isNotEmpty() || now - lastDetectTime < DETECT_HOLD_MS) {
-            for (barcode in barcodes) {
-                drawBarcodeOutline(canvas, barcode)
-            }
-        }
-
+        // 焦点动画
         if (focusStartTime > 0 && now - focusStartTime < FOCUS_ANIM_MS) {
             drawFocusAnim(canvas, now)
             postInvalidateDelayed(16)
         }
 
-        if (barcodes.isNotEmpty()) {
+        // 有识别结果时持续重绘
+        if (barcodes.isNotEmpty() || now - lastDetectTime < DETECT_HOLD_MS) {
             postInvalidateDelayed(50)
         }
     }
@@ -114,6 +79,7 @@ class OverlayView @JvmOverloads constructor(
         val r = l + size
         val b = t + size
 
+        // 暗色遮罩
         val maskPaint = Paint().apply {
             color = Color.parseColor("#33000000")
             style = Paint.Style.FILL
@@ -123,6 +89,7 @@ class OverlayView @JvmOverloads constructor(
         canvas.drawRect(r, t, width.toFloat(), b, maskPaint)
         canvas.drawRect(0f, b, width.toFloat(), height.toFloat(), maskPaint)
 
+        // 虚线边框
         val dashPaint = Paint().apply {
             color = Color.parseColor("#80FFFFFF")
             style = Paint.Style.STROKE
@@ -132,6 +99,7 @@ class OverlayView @JvmOverloads constructor(
         }
         canvas.drawRect(l, t, r, b, dashPaint)
 
+        // 四角短标
         val cornerLen = 24f
         val cPaint = Paint().apply {
             color = Color.parseColor("#FFFFFF")
@@ -148,91 +116,6 @@ class OverlayView @JvmOverloads constructor(
         canvas.drawLine(r, b, r - cornerLen, b, cPaint)
         canvas.drawLine(l, b - cornerLen, l, b, cPaint)
         canvas.drawLine(l, b, l + cornerLen, b, cPaint)
-    }
-
-    private fun drawBarcodeOutline(canvas: Canvas, barcode: Barcode) {
-        val points = barcode.cornerPoints
-        if (points == null || points.size < 4) return
-
-        val mappedPoints = points.map { p ->
-            mapPoint(p.x.toFloat(), p.y.toFloat())
-        }
-
-        val path = Path().apply {
-            moveTo(mappedPoints[0].x, mappedPoints[0].y)
-            for (i in 1 until mappedPoints.size) {
-                lineTo(mappedPoints[i].x, mappedPoints[i].y)
-            }
-            close()
-        }
-        canvas.drawPath(path, fillPaint)
-        canvas.drawPath(path, borderPaint)
-
-        // 四角加粗标记
-        val cornerLen = 16f
-        for (i in mappedPoints.indices) {
-            val curr = mappedPoints[i]
-            val next = mappedPoints[(i + 1) % mappedPoints.size]
-            val dx = next.x - curr.x
-            val dy = next.y - curr.y
-            val dist = Math.sqrt((dx * dx + dy * dy).toDouble()).toFloat()
-            if (dist == 0f) continue
-            val ux = dx / dist
-            val uy = dy / dist
-            canvas.drawLine(curr.x, curr.y, curr.x + ux * cornerLen, curr.y + uy * cornerLen, cornerPaint)
-            val prev = mappedPoints[(i - 1 + mappedPoints.size) % mappedPoints.size]
-            val pdx = prev.x - curr.x
-            val pdy = prev.y - curr.y
-            val pdist = Math.sqrt((pdx * pdx + pdy * pdy).toDouble()).toFloat()
-            if (pdist > 0f) {
-                canvas.drawLine(curr.x, curr.y, curr.x + pdx / pdist * cornerLen, curr.y + pdy / pdist * cornerLen, cornerPaint)
-            }
-        }
-
-        // 中心脉冲
-        val cx = mappedPoints.map { it.x }.average().toFloat()
-        val cy = mappedPoints.map { it.y }.average().toFloat()
-        val elapsed = System.currentTimeMillis() % 1000
-        val progress = elapsed / 1000f
-        val pulseAlpha = (60 * (1 - progress)).toInt()
-        val pulseRadius = 8f + progress * 20f
-        val pulsePaint = Paint().apply {
-            color = Color.parseColor("#4CAF50")
-            style = Paint.Style.FILL
-            isAntiAlias = true
-            alpha = pulseAlpha
-        }
-        canvas.drawCircle(cx, cy, pulseRadius, pulsePaint)
-    }
-
-    /**
-     * 将图像坐标映射到视图坐标
-     * 关键修复：正确处理旋转和缩放
-     */
-    private fun mapPoint(imgX: Float, imgY: Float): PointF {
-        val vw = viewWidth.toFloat()
-        val vh = viewHeight.toFloat()
-        val iw = imageWidth.toFloat()
-        val ih = imageHeight.toFloat()
-
-        // 根据旋转调整坐标
-        val (rx, ry) = when (rotation) {
-            90 -> Pair(ih - imgY, imgX)
-            180 -> Pair(iw - imgX, ih - imgY)
-            270 -> Pair(imgY, iw - imgX)
-            else -> Pair(imgX, imgY)
-        }
-
-        // 计算旋转后的图像尺寸
-        val rotatedW = if (rotation == 90 || rotation == 270) ih else iw
-        val rotatedH = if (rotation == 90 || rotation == 270) iw else ih
-
-        // 计算缩放（FIT_CENTER 模式）
-        val scale = minOf(vw / rotatedW, vh / rotatedH)
-        val offsetX = (vw - rotatedW * scale) / 2f
-        val offsetY = (vh - rotatedH * scale) / 2f
-
-        return PointF(rx * scale + offsetX, ry * scale + offsetY)
     }
 
     private fun drawFocusAnim(canvas: Canvas, now: Long) {

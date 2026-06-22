@@ -24,6 +24,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.camera.core.*
@@ -61,6 +62,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnOpenFile: Button
     private lateinit var btnOpenDir: Button
     private lateinit var btnNextFile: Button
+    private lateinit var btnRestart: Button
+    private lateinit var btnStop: Button
     private lateinit var btnSettings: ImageButton
 
     private val isProcessing = AtomicBoolean(false)
@@ -110,6 +113,14 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
 
+        // 为顶部栏添加状态栏高度的 padding，避免重叠
+        val topBar = findViewById<LinearLayout>(R.id.topBar)
+        ViewCompat.setOnApplyWindowInsetsListener(topBar) { view, insets ->
+            val statusBarHeight = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
+            view.setPadding(view.paddingLeft, statusBarHeight, view.paddingRight, view.paddingBottom)
+            insets
+        }
+
         previewView = findViewById(R.id.previewView)
         overlayView = findViewById(R.id.overlayView)
         statusText = findViewById(R.id.statusText)
@@ -124,6 +135,8 @@ class MainActivity : AppCompatActivity() {
         btnOpenFile = findViewById(R.id.btnOpenFile)
         btnOpenDir = findViewById(R.id.btnOpenDir)
         btnNextFile = findViewById(R.id.btnNextFile)
+        btnRestart = findViewById(R.id.btnRestart)
+        btnStop = findViewById(R.id.btnStop)
         btnSettings = findViewById(R.id.btnSettings)
 
         decoder = Mobile.newDecoder()
@@ -134,6 +147,11 @@ class MainActivity : AppCompatActivity() {
         btnOpenFile.setOnClickListener { openFile() }
         btnOpenDir.setOnClickListener { openDir() }
         btnNextFile.setOnClickListener { resetForNext() }
+        btnRestart.setOnClickListener { resetForNext() }
+        btnStop.setOnClickListener {
+            isStopped = true
+            statusText.text = "已停止扫描"
+        }
         btnSettings.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
@@ -310,6 +328,12 @@ class MainActivity : AppCompatActivity() {
                     progressCard.visibility = View.GONE
                     resultPanel.visibility = View.VISIBLE
                     lastSavedFile = savedFile
+                } else {
+                    // 显示文件大小和后缀名（如果能检测到）
+                    val dataSize = decoder.totalSize().toInt()
+                    if (dataSize > 0) {
+                        fileInfo.text = formatSize(dataSize.toLong())
+                    }
                 }
             }
         } catch (e: Exception) {
@@ -324,23 +348,16 @@ class MainActivity : AppCompatActivity() {
         val unique = decoder.uniqueFrames().toInt()
         val totalFrames = decoder.totalFrames().toInt()
         val dataSize = decoder.totalSize().toInt()
-        val chunkLen = decoder.chunkLen().toInt()
 
         progressCard.visibility = View.VISIBLE
         progressBar.progress = progress
 
-        // 帧数显示：已接收/总帧数
+        // 帧数显示：已接收/总帧数 + 百分比
         progressPercent.text = "$progress% | $unique/$totalFrames 帧"
 
-        // 文件信息：后缀名 + 大小
-        val ext = if (dataSize > 0) detectDataExtension(dataSize) else ""
+        // 文件信息：大小
         val sizeStr = if (dataSize > 0) formatSize(dataSize.toLong()) else ""
-        fileInfo.text = when {
-            ext.isNotEmpty() && sizeStr.isNotEmpty() -> "$ext · $sizeStr"
-            ext.isNotEmpty() -> ext
-            sizeStr.isNotEmpty() -> sizeStr
-            else -> ""
-        }
+        fileInfo.text = sizeStr
 
         val cameraState = if (currentCamera != null) "正常" else "未连接"
         decoderStatus.text = "解码器: 工作中 | 摄像头: $cameraState"

@@ -17,8 +17,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- 顶部状态栏（半透明） -->
+    <!-- 顶部状态栏 -->
     <LinearLayout
+        android:id="@+id/topBar"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:background="#66000000"
@@ -144,7 +145,37 @@
             android:text="诊断: 0 新帧 | 0 重复 | 0% 唯一"
             android:textColor="#80FFFFFF"
             android:textSize="11sp"
-            android:fontFamily="monospace" />
+            android:fontFamily="monospace"
+            android:layout_marginBottom="12dp" />
+
+        <!-- 重新开始 / 停止按钮 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnRestart"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:text="重新开始"
+                android:textSize="13sp"
+                android:backgroundTint="#66FFFFFF"
+                android:textColor="#FFFFFF"
+                android:layout_marginEnd="6dp" />
+
+            <Button
+                android:id="@+id/btnStop"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:text="停止扫描"
+                android:textSize="13sp"
+                android:backgroundTint="#33FF5252"
+                android:textColor="#FF5252"
+                android:layout_marginStart="6dp" />
+        </LinearLayout>
     </LinearLayout>
 
     <!-- 结果面板（底部） -->
