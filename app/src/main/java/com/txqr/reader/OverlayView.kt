@@ -204,11 +204,11 @@ class OverlayView @JvmOverloads constructor(
             val curr = mappedPoints[i]
             val next = mappedPoints[(i + 1) % mappedPoints.size]
             val dx = next.x - curr.x
-            val next.y = next.y - curr.y
-            val dist = Math.sqrt((dx * dx + next.y * next.y).toDouble()).toFloat()
+            val dy = next.y - curr.y
+            val dist = Math.sqrt((dx * dx + dy * dy).toDouble()).toFloat()
             if (dist == 0f) continue
             val ux = dx / dist
-            val uy = next.y / dist
+            val uy = dy / dist
             canvas.drawLine(curr.x, curr.y, curr.x + ux * cornerLen, curr.y + uy * cornerLen, cornerPaint)
             val prev = mappedPoints[(i - 1 + mappedPoints.size) % mappedPoints.size]
             val pdx = prev.x - curr.x
