@@ -79,6 +79,7 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "TxqrReader"
         private const val REQUEST_CODE_PERMISSIONS = 10
+        private const val KEY_FILE_COUNT = "file_count"
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
     }
 
@@ -98,6 +99,9 @@ class MainActivity : AppCompatActivity() {
 
         decoder = Mobile.newDecoder()
         cameraExecutor = Executors.newSingleThreadExecutor()
+
+        // 恢复文件计数器
+        fileCount = prefs.getInt(KEY_FILE_COUNT, 0)
 
         btnOpenFile.setOnClickListener { openFile() }
         btnOpenDir.setOnClickListener { openDir() }
@@ -164,9 +168,9 @@ class MainActivity : AppCompatActivity() {
                 BarcodeScanning.getClient()
             }
 
-            // 最高分辨率，最快速度
+            // 关键优化: 用较低分辨率加速识别 (640x480 足够识别QR码)
             val imageAnalysis = ImageAnalysis.Builder()
-                .setTargetResolution(Size(1920, 1080))
+                .setTargetResolution(Size(640, 480))
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
                 .build()
@@ -178,7 +182,7 @@ class MainActivity : AppCompatActivity() {
                 cameraProvider.unbindAll()
                 currentCamera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalysis)
 
-                // 持续自动对焦 + 曝光
+                // 持续自动对焦 + 曝光 (永不取消)
                 currentCamera?.cameraControl?.let { ctrl ->
                     ctrl.startFocusAndMetering(
                         FocusMeteringAction.Builder(
@@ -244,6 +248,8 @@ class MainActivity : AppCompatActivity() {
                 if (decoder.isCompleted()) {
                     val data = decoder.dataBytes()
                     fileCount++
+                    // 持久化文件计数器
+                    prefs.edit().putInt(KEY_FILE_COUNT, fileCount).apply()
                     val savedFile = saveFile(data, fileCount)
 
                     statusText.text = "✅ 解码完成！"
@@ -433,7 +439,7 @@ class MainActivity : AppCompatActivity() {
         val dir = lastSavedFile?.parentFile ?: txqrDir
         if (!dir.exists()) dir.mkdirs()
 
-        // 策略1: 小米文件管理器 + file:// URI（最可靠）
+        // 策略1: 小米文件管理器
         try {
             val intent = Intent().apply {
                 setClassName("com.android.fileexplorer", "com.android.fileexplorer.FileExplorerTabActivity")
@@ -444,7 +450,7 @@ class MainActivity : AppCompatActivity() {
             return
         } catch (_: Exception) {}
 
-        // 策略2: 系统文件管理器 (API 30+)
+        // 策略2: 系统文件管理器
         try {
             val intent = Intent.makeMainSelectorActivity(Intent.ACTION_MAIN, Intent.CATEGORY_APP_FILES)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -452,7 +458,7 @@ class MainActivity : AppCompatActivity() {
             return
         } catch (_: Exception) {}
 
-        // 策略3: file:// URI + 通用 intent
+        // 策略3: file:// URI
         try {
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 data = Uri.fromFile(dir)
