@@ -346,7 +346,7 @@ class MainActivity : AppCompatActivity() {
                     contentResolver.openOutputStream(finalUri)?.use { it.write(data) }
                     Toast.makeText(this, "已保存: $fileName", Toast.LENGTH_SHORT).show()
                     // 返回一个虚拟 File 用于 openFile
-                    File(txqrDir, fileName).also { if (!parentFile.exists()) parentFile.mkdirs() }
+                    File(txqrDir, fileName).also { if (!it.parentFile.exists()) it.parentFile.mkdirs() }
                 } else {
                     Toast.makeText(this, "创建文件失败", Toast.LENGTH_SHORT).show()
                     null
