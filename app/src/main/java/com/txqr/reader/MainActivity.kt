@@ -16,13 +16,16 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
-import android.view.WindowInsetsController
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -147,22 +150,12 @@ class MainActivity : AppCompatActivity() {
 
     /** 沉浸式模式：透明状态栏+导航栏，内容延伸到系统栏 */
     private fun setupImmersiveMode() {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         window.statusBarColor = Color.TRANSPARENT
         window.navigationBarColor = Color.TRANSPARENT
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            window.insetsController?.let {
-                it.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            }
-        } else {
-            @Suppress("DEPRECATION")
-            window.decorView.systemUiVisibility = (
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-            )
-        }
+        val controller = WindowInsetsControllerCompat(window, window.decorView)
+        controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
     }
 
     private fun setupGestures() {
