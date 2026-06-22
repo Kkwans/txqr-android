@@ -300,7 +300,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateProgressDisplay() {
-        val progress = decoder.progress()
+        val progress = decoder.progress().toInt()
         val unique = decoder.uniqueFrames().toInt()
         val total = decoder.totalSize().toInt()
 
