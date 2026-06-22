@@ -335,11 +335,10 @@ class MainActivity : AppCompatActivity() {
                     prefs.edit().putInt(KEY_FILE_COUNT, fileCount).apply()
                     val savedFile = saveFile(data, fileCount)
 
-                    // 显示文件信息（名称+后缀名+大小）
+                    // 显示文件信息（名称+大小）
                     if (savedFile != null) {
-                        val ext = detectExtension(data)
                         val size = formatSize(data.size.toLong())
-                        fileInfo.text = "${savedFile.name} · $ext · $size"
+                        fileInfo.text = "${savedFile.name} · $size"
                     }
 
                     statusText.text = "✅ 解码完成！"
