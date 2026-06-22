@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.DocumentsContract
@@ -14,7 +15,6 @@ import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.FileProvider
 import java.io.File
 
 class SettingsActivity : AppCompatActivity() {
@@ -61,7 +61,7 @@ class SettingsActivity : AppCompatActivity() {
             prefs.edit().putBoolean(KEY_AUTO_FOCUS, isChecked).apply()
         }
 
-        // 打开保存目录
+        // 查看保存目录
         btnOpenSaveDir.setOnClickListener {
             val dir = if (saveDir.isEmpty()) {
                 File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "TXQR")
@@ -69,62 +69,89 @@ class SettingsActivity : AppCompatActivity() {
                 File(saveDir)
             }
             if (!dir.exists()) dir.mkdirs()
-            openDirectory(dir)
+            openFileManager(dir)
         }
 
-        // 设置保存目录 - 使用 SAF 目录选择器
+        // 设置保存目录 - SAF 系统文件选择器
         findViewById<LinearLayout>(R.id.saveDirRow).setOnClickListener {
-            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-            startActivityForResult(intent, REQUEST_CODE_OPEN_DOCUMENT_TREE)
+            chooseDirectory()
         }
 
         btnBack.setOnClickListener { finish() }
+    }
+
+    private fun chooseDirectory() {
+        try {
+            // 使用 SAF ACTION_OPEN_DOCUMENT_TREE 让用户选择目录
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            startActivityForResult(intent, REQUEST_CODE_OPEN_DOCUMENT_TREE)
+        } catch (e: Exception) {
+            Toast.makeText(this, "系统文件选择器不可用", Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_CODE_OPEN_DOCUMENT_TREE && resultCode == Activity.RESULT_OK) {
             val uri = data?.data ?: return
-            // 获取真实路径
-            val path = getRealPathFromUri(uri)
+            val path = getPathFromTreeUri(uri)
             if (path != null) {
                 prefs.edit().putString(KEY_SAVE_DIR, path).apply()
                 tvSaveDir.text = path
                 Toast.makeText(this, "保存目录已设置: $path", Toast.LENGTH_SHORT).show()
             } else {
-                // 如果无法获取真实路径，保存 URI
-                prefs.edit().putString(KEY_SAVE_DIR, uri.toString()).apply()
-                tvSaveDir.text = uri.lastPathSegment ?: "已选择目录"
-                Toast.makeText(this, "保存目录已设置", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "目录已选择，但无法获取路径", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    private fun getRealPathFromUri(uri: Uri): String? {
-        val docId = DocumentsContract.getDocumentId(uri)
-        val split = docId.split(":")
-        val type = split[0]
-        if ("primary".equals(type, ignoreCase = true)) {
-            return "/storage/emulated/0/${split[1]}"
+    /** 从 SAF tree URI 提取真实路径 */
+    private fun getPathFromTreeUri(uri: Uri): String? {
+        return try {
+            val docId = DocumentsContract.getDocumentId(uri)
+            val split = docId.split(":")
+            if (split.size >= 2 && "primary".equals(split[0], ignoreCase = true)) {
+                "/storage/emulated/0/${split[1]}"
+            } else if (split.size == 1 && "primary".equals(split[0], ignoreCase = true)) {
+                "/storage/emulated/0"
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            null
         }
-        return null
     }
 
-    private fun openDirectory(dir: File) {
+    private fun openFileManager(dir: File) {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val intent = Intent.makeMainSelectorActivity(Intent.ACTION_MAIN, Intent.CATEGORY_APP_FILES)
+                startActivity(intent)
+                return
+            }
+        } catch (_: Exception) {}
+
         try {
             val intent = Intent(Intent.ACTION_VIEW)
-            intent.setDataAndType(Uri.fromFile(dir), "resource/folder")
+            intent.setDataAndType(android.net.Uri.fromFile(dir), "*/*")
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(intent)
-        } catch (e1: Exception) {
-            try {
-                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                startActivity(intent)
-            } catch (e2: Exception) {
-                Toast.makeText(this, "无法打开目录: ${e2.message}", Toast.LENGTH_SHORT).show()
-            }
+            return
+        } catch (_: Exception) {}
+
+        try {
+            val intent = packageManager.getLaunchIntentForPackage("com.android.fileexplorer")
+            if (intent != null) { startActivity(intent); return }
+        } catch (_: Exception) {}
+
+        try {
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+        } catch (_: Exception) {
+            Toast.makeText(this, "请在文件管理器查看: ${dir.absolutePath}", Toast.LENGTH_LONG).show()
         }
     }
 }

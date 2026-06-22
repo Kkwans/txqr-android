@@ -5,8 +5,10 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.provider.Settings
 import android.util.Log
 import android.util.Size
 import android.view.GestureDetector
@@ -53,7 +55,6 @@ class MainActivity : AppCompatActivity() {
     private val isProcessing = AtomicBoolean(false)
     private var fileCount = 0
     private var lastSavedFile: File? = null
-    private var lastSavedDir: File? = null
 
     private var currentCamera: Camera? = null
     private lateinit var scaleDetector: ScaleGestureDetector
@@ -153,18 +154,17 @@ class MainActivity : AppCompatActivity() {
             }
 
             val qrOnly = prefs.getBoolean("qr_only", true)
-            val analyzer = if (qrOnly) {
-                val options = BarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_QR_CODE).build()
-                createAnalyzer(BarcodeScanning.getClient(options))
+            val scanner = if (qrOnly) {
+                BarcodeScanning.getClient(BarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_QR_CODE).build())
             } else {
-                createAnalyzer(BarcodeScanning.getClient())
+                BarcodeScanning.getClient()
             }
 
             val imageAnalysis = ImageAnalysis.Builder()
-                .setTargetResolution(Size(1920, 1080))
+                .setTargetResolution(Size(1280, 720))
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
-                .also { it.setAnalyzer(cameraExecutor, analyzer) }
+                .also { it.setAnalyzer(cameraExecutor, createAnalyzer(scanner)) }
 
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
@@ -175,8 +175,7 @@ class MainActivity : AppCompatActivity() {
                 if (prefs.getBoolean("auto_focus", true)) {
                     val factory = previewView.meteringPointFactory
                     val point = factory.createPoint(0.5f, 0.5f)
-                    val action = FocusMeteringAction.Builder(point, FocusMeteringAction.FLAG_AF or FocusMeteringAction.FLAG_AE)
-                        .build()
+                    val action = FocusMeteringAction.Builder(point, FocusMeteringAction.FLAG_AF or FocusMeteringAction.FLAG_AE).build()
                     currentCamera?.cameraControl?.startFocusAndMetering(action)
                 }
             } catch (exc: Exception) {
@@ -186,9 +185,7 @@ class MainActivity : AppCompatActivity() {
         }, ContextCompat.getMainExecutor(this))
     }
 
-    private fun createAnalyzer(
-        scanner: com.google.mlkit.vision.barcode.BarcodeScanner
-    ): ImageAnalysis.Analyzer {
+    private fun createAnalyzer(scanner: com.google.mlkit.vision.barcode.BarcodeScanner): ImageAnalysis.Analyzer {
         return ImageAnalysis.Analyzer { imageProxy ->
             @SuppressLint("UnsafeOptInUsageError")
             val mediaImage = imageProxy.image
@@ -198,7 +195,7 @@ class MainActivity : AppCompatActivity() {
                 scanner.process(image)
                     .addOnSuccessListener { barcodes ->
                         val showOverlay = prefs.getBoolean("show_overlay", true)
-                        if (showOverlay && barcodes.isNotEmpty()) {
+                        if (showOverlay) {
                             runOnUiThread {
                                 overlayView.updateBarcodes(
                                     barcodes,
@@ -207,21 +204,21 @@ class MainActivity : AppCompatActivity() {
                                     imageProxy.imageInfo.rotationDegrees
                                 )
                             }
-                        } else if (barcodes.isEmpty()) {
-                            runOnUiThread { overlayView.clear() }
                         }
 
-                        for (barcode in barcodes) {
-                            val content = barcode.rawValue ?: continue
-                            if (content.contains("|")) {
-                                onQRCodeDetected(content)
+                        // 处理解码内容
+                        if (!isProcessing.get() && !decoder.isCompleted()) {
+                            for (barcode in barcodes) {
+                                val content = barcode.rawValue ?: continue
+                                if (content.contains("|")) {
+                                    onQRCodeDetected(content)
+                                    break
+                                }
                             }
                         }
                     }
-                    .addOnFailureListener { }
-                    .addOnCompleteListener {
-                        imageProxy.close()
-                    }
+                    .addOnFailureListener { Log.e(TAG, "ML Kit error", it) }
+                    .addOnCompleteListener { imageProxy.close() }
             } else {
                 imageProxy.close()
             }
@@ -240,17 +237,15 @@ class MainActivity : AppCompatActivity() {
                     val data = decoder.dataBytes()
                     fileCount++
                     val savedFile = saveFile(data, fileCount)
-                    lastSavedFile = savedFile
-                    lastSavedDir = savedFile?.parentFile
 
                     statusText.text = "✅ 解码完成！"
-                    frameCountText.text = "${savedFile?.name} (${formatSize(data.size.toLong())})"
-                    resultPanel.visibility = View.VISIBLE
+                    frameCountText.text = savedFile?.name ?: ""
                     overlayView.clear()
+                    resultPanel.visibility = View.VISIBLE
+                    lastSavedFile = savedFile
                 } else {
-                    val progress = decoder.progress()
-                    statusText.text = "⏳ $progress% (帧: ${decoder.uniqueFrames()})"
-                    frameCountText.text = "大小: ${formatSize(decoder.totalSize())}"
+                    statusText.text = "⏳ ${decoder.progress()}% (${decoder.uniqueFrames()} 帧)"
+                    frameCountText.text = formatSize(decoder.totalSize())
                 }
             }
         } catch (e: Exception) {
@@ -304,9 +299,7 @@ class MainActivity : AppCompatActivity() {
     private fun detectTextType(data: ByteArray): String {
         val head = try {
             String(data, 0, minOf(500, data.size), Charsets.UTF_8).lowercase()
-        } catch (e: Exception) {
-            return ".txt"
-        }
+        } catch (e: Exception) { return ".txt" }
         return when {
             head.trimStart().startsWith("{") || head.trimStart().startsWith("[") -> ".json"
             head.contains("<?xml") -> ".xml"
@@ -346,9 +339,10 @@ class MainActivity : AppCompatActivity() {
         val file = lastSavedFile ?: return
         try {
             val uri = FileProvider.getUriForFile(this, "${packageName}.fileprovider", file)
-            val intent = Intent(Intent.ACTION_VIEW)
-            intent.setDataAndType(uri, getMimeType(file))
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, getMimeType(file))
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
             startActivity(intent)
         } catch (e: Exception) {
             Toast.makeText(this, "无法打开文件: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -356,40 +350,66 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openDir() {
-        val dir = lastSavedDir ?: txqrDir
+        val dir = lastSavedFile?.parentFile ?: txqrDir
         if (!dir.exists()) dir.mkdirs()
 
-        // 尝试用文件管理器打开目录
         try {
-            // 方法1: 直接打开目录
-            val intent = Intent(Intent.ACTION_VIEW)
-            intent.setDataAndType(Uri.fromFile(dir), "resource/folder")
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            startActivity(intent)
-        } catch (e1: Exception) {
-            try {
-                // 方法2: 用 DocumentsUI 打开
-                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            // 策略1: API 30+ 系统文件管理器（兼容 HyperOS/安卓16）
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val intent = Intent.makeMainSelectorActivity(Intent.ACTION_MAIN, Intent.CATEGORY_APP_FILES)
                 startActivity(intent)
-            } catch (e2: Exception) {
-                try {
-                    // 方法3: 打开目录下的一个文件
-                    val files = dir.listFiles()
-                    if (files != null && files.isNotEmpty()) {
-                        val file = files[0]
-                        val uri = FileProvider.getUriForFile(this, "${packageName}.fileprovider", file)
-                        val intent = Intent(Intent.ACTION_VIEW)
-                        intent.setDataAndType(uri, getMimeType(file))
-                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                        startActivity(intent)
-                    } else {
-                        Toast.makeText(this, "目录为空: ${dir.absolutePath}", Toast.LENGTH_SHORT).show()
-                    }
-                } catch (e3: Exception) {
-                    Toast.makeText(this, "无法打开目录: ${e3.message}", Toast.LENGTH_SHORT).show()
-                }
+                return
             }
+        } catch (e: Exception) {
+            Log.w(TAG, "系统文件管理器失败", e)
+        }
+
+        try {
+            // 策略2: 尝试用 DocumentsUI 打开指定目录
+            val treeUri = FileProvider.getUriForFile(this, "${packageName}.fileprovider", dir)
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(treeUri, "vnd.android.document/directory")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            startActivity(intent)
+            return
+        } catch (e: Exception) {
+            Log.w(TAG, "DocumentsUI 失败", e)
+        }
+
+        try {
+            // 策略3: 用 file:// URI 打开（部分设备仍支持）
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(Uri.fromFile(dir), "*/*")
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            startActivity(intent)
+            return
+        } catch (e: Exception) {
+            Log.w(TAG, "file:// 失败", e)
+        }
+
+        try {
+            // 策略4: 尝试打开小米文件管理器特定包名
+            val intent = packageManager.getLaunchIntentForPackage("com.android.fileexplorer")
+            if (intent != null) {
+                startActivity(intent)
+                return
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "小米文件管理器失败", e)
+        }
+
+        // 最终策略: 打开系统文档选择器（用户可导航到目录）
+        try {
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            startActivity(intent)
+            Toast.makeText(this, "请在文件管理器中找到: Download/TXQR", Toast.LENGTH_LONG).show()
+        } catch (e: Exception) {
+            Toast.makeText(this, "无法打开文件管理器, 请在 Download/TXQR 目录查看", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -410,18 +430,17 @@ class MainActivity : AppCompatActivity() {
     private fun resetForNext() {
         decoder.reset()
         resultPanel.visibility = View.GONE
-        statusText.text = "将摄像头对准二维码动画"
+        statusText.text = "\u5C06\u6444\u50CF\u5934\u5BF9\u51C6\u4E8C\u7EF4\u7801\u52A8\u753B"
         frameCountText.text = ""
         lastSavedFile = null
+        overlayView.clear()
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(baseContext, it) == PackageManager.PERMISSION_GRANTED
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<String>, grantResults: IntArray
-    ) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_CODE_PERMISSIONS) {
             if (allPermissionsGranted()) startCamera()
