@@ -70,6 +70,7 @@ class MainActivity : AppCompatActivity() {
     private var fileCount = 0
     private var lastSavedFile: File? = null
     private var isStopped = false
+    private var isPaused = false
 
     // 诊断计数
     private var totalFramesProcessed = 0
@@ -115,11 +116,8 @@ class MainActivity : AppCompatActivity() {
 
         // 为顶部栏添加状态栏高度的 padding，避免重叠
         val topBar = findViewById<LinearLayout>(R.id.topBar)
-        ViewCompat.setOnApplyWindowInsetsListener(topBar) { view, insets ->
-            val statusBarHeight = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
-            view.setPadding(view.paddingLeft, statusBarHeight, view.paddingRight, view.paddingBottom)
-            insets
-        }
+        val statusBarHeight = getStatusBarHeight()
+        topBar.setPadding(topBar.paddingLeft, statusBarHeight + 8, topBar.paddingRight, topBar.paddingBottom)
 
         previewView = findViewById(R.id.previewView)
         overlayView = findViewById(R.id.overlayView)
@@ -149,8 +147,18 @@ class MainActivity : AppCompatActivity() {
         btnNextFile.setOnClickListener { resetForNext() }
         btnRestart.setOnClickListener { resetForNext() }
         btnStop.setOnClickListener {
-            isStopped = true
-            statusText.text = "已停止扫描"
+            isPaused = !isPaused
+            if (isPaused) {
+                isStopped = true
+                btnStop.text = "继续扫描"
+                btnStop.setTextColor(Color.parseColor("#4CAF50"))
+                statusText.text = "已暂停"
+            } else {
+                isStopped = false
+                btnStop.text = "暂停扫描"
+                btnStop.setTextColor(Color.parseColor("#FF5252"))
+                statusText.text = "扫描中..."
+            }
         }
         btnSettings.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
@@ -173,6 +181,11 @@ class MainActivity : AppCompatActivity() {
 
         val controller = WindowInsetsControllerCompat(window, window.decorView)
         controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+    }
+
+    private fun getStatusBarHeight(): Int {
+        val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
+        return if (resourceId > 0) resources.getDimensionPixelSize(resourceId) else 0
     }
 
     private fun setupGestures() {
@@ -322,6 +335,13 @@ class MainActivity : AppCompatActivity() {
                     prefs.edit().putInt(KEY_FILE_COUNT, fileCount).apply()
                     val savedFile = saveFile(data, fileCount)
 
+                    // 显示文件信息（名称+后缀名+大小）
+                    if (savedFile != null) {
+                        val ext = detectExtension(data)
+                        val size = formatSize(data.size.toLong())
+                        fileInfo.text = "${savedFile.name} · $ext · $size"
+                    }
+
                     statusText.text = "✅ 解码完成！"
                     frameCountText.text = savedFile?.name ?: ""
                     overlayView.clear()
@@ -329,11 +349,10 @@ class MainActivity : AppCompatActivity() {
                     resultPanel.visibility = View.VISIBLE
                     lastSavedFile = savedFile
                 } else {
-                    // 显示文件大小和后缀名（如果能检测到）
-                    val dataSize = decoder.totalSize().toInt()
-                    if (dataSize > 0) {
-                        fileInfo.text = formatSize(dataSize.toLong())
-                    }
+                    // 解码中显示帧进度
+                    val unique = decoder.uniqueFrames().toInt()
+                    val total = decoder.totalFrames().toInt()
+                    fileInfo.text = "$unique/$total 帧"
                 }
             }
         } catch (e: Exception) {
@@ -355,9 +374,8 @@ class MainActivity : AppCompatActivity() {
         // 帧数显示：已接收/总帧数 + 百分比
         progressPercent.text = "$progress% | $unique/$totalFrames 帧"
 
-        // 文件信息：大小
-        val sizeStr = if (dataSize > 0) formatSize(dataSize.toLong()) else ""
-        fileInfo.text = sizeStr
+        // 文件大小 (只在解码完成后显示)
+        fileInfo.text = ""
 
         val cameraState = if (currentCamera != null) "正常" else "未连接"
         decoderStatus.text = "解码器: 工作中 | 摄像头: $cameraState"
@@ -598,6 +616,7 @@ class MainActivity : AppCompatActivity() {
     private fun resetForNext() {
         decoder.reset()
         isStopped = false
+        isPaused = false
         totalFramesProcessed = 0
         newFrames = 0
         duplicateFrames = 0
@@ -608,6 +627,8 @@ class MainActivity : AppCompatActivity() {
         frameCountText.text = ""
         lastSavedFile = null
         overlayView.clear()
+        btnStop.text = "暂停扫描"
+        btnStop.setTextColor(Color.parseColor("#FF5252"))
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
