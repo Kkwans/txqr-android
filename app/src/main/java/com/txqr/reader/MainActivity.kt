@@ -63,10 +63,10 @@ class MainActivity : AppCompatActivity() {
     private var isStopped = false
 
     // 诊断计数
-    private var totalFramesProcessed = 0L
-    private var newFrames = 0L
-    private var duplicateFrames = 0L
-    private var uniqueFrames = 0L
+    private var totalFramesProcessed = 0
+    private var newFrames = 0
+    private var duplicateFrames = 0
+    private var uniqueFrames = 0
 
     private var currentCamera: Camera? = null
     private lateinit var scaleDetector: ScaleGestureDetector
@@ -302,7 +302,7 @@ class MainActivity : AppCompatActivity() {
     private fun updateProgressDisplay() {
         val progress = decoder.progress()
         val unique = decoder.uniqueFrames()
-        val total = decoder.totalFrames()
+        val total = decoder.totalSize()
 
         progressCard.visibility = View.VISIBLE
         progressBar.progress = progress
