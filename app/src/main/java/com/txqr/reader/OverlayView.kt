@@ -1,6 +1,5 @@
 package com.txqr.reader
 
-import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
@@ -18,21 +17,14 @@ class OverlayView @JvmOverloads constructor(
     private var viewHeight = 0
     private var rotation = 0
 
-    // 焦点动画
     private var focusX = 0f
     private var focusY = 0f
     private var focusStartTime = 0L
     private val FOCUS_ANIM_MS = 800L
 
-    // 识别框持续显示
     private var lastDetectTime = 0L
     private val DETECT_HOLD_MS = 300L
 
-    // 脉冲动画
-    private var pulseAnimator: ValueAnimator? = null
-    private var pulseProgress = 0f
-
-    // 画笔 - 识别框（绿色半透明填充 + 绿色边框）
     private val fillPaint = Paint().apply {
         color = Color.parseColor("#334CAF50")
         style = Paint.Style.FILL
@@ -46,7 +38,6 @@ class OverlayView @JvmOverloads constructor(
         strokeCap = Paint.Cap.ROUND
         strokeJoin = Paint.Join.ROUND
     }
-    // 角标画笔（橙色加粗）
     private val cornerPaint = Paint().apply {
         color = Color.parseColor("#FF9800")
         style = Paint.Style.STROKE
@@ -54,19 +45,11 @@ class OverlayView @JvmOverloads constructor(
         isAntiAlias = true
         strokeCap = Paint.Cap.ROUND
     }
-    // 焦点画笔
     private val focusPaint = Paint().apply {
         color = Color.WHITE
         style = Paint.Style.STROKE
         strokeWidth = 2f
         isAntiAlias = true
-    }
-    // 扫描线画笔
-    private val scanLinePaint = Paint().apply {
-        color = Color.parseColor("#4CAF50")
-        style = Paint.Style.FILL
-        isAntiAlias = true
-        alpha = 80
     }
 
     fun updateBarcodes(
@@ -104,29 +87,24 @@ class OverlayView @JvmOverloads constructor(
 
         val now = System.currentTimeMillis()
 
-        // 绘制扫描区域参考框
         drawScanArea(canvas)
 
-        // 绘制识别到的二维码精确框
         if (barcodes.isNotEmpty() || now - lastDetectTime < DETECT_HOLD_MS) {
             for (barcode in barcodes) {
                 drawBarcodeOutline(canvas, barcode)
             }
         }
 
-        // 绘制焦点动画
         if (focusStartTime > 0 && now - focusStartTime < FOCUS_ANIM_MS) {
             drawFocusAnim(canvas, now)
             postInvalidateDelayed(16)
         }
 
-        // 持续重绘（如果有识别结果）
         if (barcodes.isNotEmpty()) {
             postInvalidateDelayed(50)
         }
     }
 
-    /** 绘制屏幕中央的扫描区域参考线 */
     private fun drawScanArea(canvas: Canvas) {
         val cw = width.toFloat() / 2f
         val ch = height.toFloat() / 2f
@@ -136,7 +114,6 @@ class OverlayView @JvmOverloads constructor(
         val r = l + size
         val b = t + size
 
-        // 暗色遮罩（扫描区域外）
         val maskPaint = Paint().apply {
             color = Color.parseColor("#33000000")
             style = Paint.Style.FILL
@@ -146,7 +123,6 @@ class OverlayView @JvmOverloads constructor(
         canvas.drawRect(r, t, width.toFloat(), b, maskPaint)
         canvas.drawRect(0f, b, width.toFloat(), height.toFloat(), maskPaint)
 
-        // 虚线边框
         val dashPaint = Paint().apply {
             color = Color.parseColor("#80FFFFFF")
             style = Paint.Style.STROKE
@@ -156,7 +132,6 @@ class OverlayView @JvmOverloads constructor(
         }
         canvas.drawRect(l, t, r, b, dashPaint)
 
-        // 四角短标
         val cornerLen = 24f
         val cPaint = Paint().apply {
             color = Color.parseColor("#FFFFFF")
@@ -175,17 +150,14 @@ class OverlayView @JvmOverloads constructor(
         canvas.drawLine(l, b, l + cornerLen, b, cPaint)
     }
 
-    /** 绘制二维码精确边界（使用角点坐标） */
     private fun drawBarcodeOutline(canvas: Canvas, barcode: Barcode) {
         val points = barcode.cornerPoints
         if (points == null || points.size < 4) return
 
-        // 将图像坐标映射到视图坐标
         val mappedPoints = points.map { p ->
             mapPoint(p.x.toFloat(), p.y.toFloat())
         }
 
-        // 绘制填充
         val path = Path().apply {
             moveTo(mappedPoints[0].x, mappedPoints[0].y)
             for (i in 1 until mappedPoints.size) {
@@ -194,11 +166,9 @@ class OverlayView @JvmOverloads constructor(
             close()
         }
         canvas.drawPath(path, fillPaint)
-
-        // 绘制边框
         canvas.drawPath(path, borderPaint)
 
-        // 绘制四角加粗标记
+        // 四角加粗标记
         val cornerLen = 16f
         for (i in mappedPoints.indices) {
             val curr = mappedPoints[i]
@@ -219,7 +189,7 @@ class OverlayView @JvmOverloads constructor(
             }
         }
 
-        // 中心脉冲效果
+        // 中心脉冲
         val cx = mappedPoints.map { it.x }.average().toFloat()
         val cy = mappedPoints.map { it.y }.average().toFloat()
         val elapsed = System.currentTimeMillis() % 1000
@@ -235,7 +205,10 @@ class OverlayView @JvmOverloads constructor(
         canvas.drawCircle(cx, cy, pulseRadius, pulsePaint)
     }
 
-    /** 将图像坐标映射到视图坐标（考虑旋转和缩放） */
+    /**
+     * 将图像坐标映射到视图坐标
+     * 关键修复：正确处理旋转和缩放
+     */
     private fun mapPoint(imgX: Float, imgY: Float): PointF {
         val vw = viewWidth.toFloat()
         val vh = viewHeight.toFloat()
@@ -250,10 +223,12 @@ class OverlayView @JvmOverloads constructor(
             else -> Pair(imgX, imgY)
         }
 
-        // 计算缩放和偏移
+        // 计算旋转后的图像尺寸
         val rotatedW = if (rotation == 90 || rotation == 270) ih else iw
         val rotatedH = if (rotation == 90 || rotation == 270) iw else ih
-        val scale = maxOf(vw / rotatedW, vh / rotatedH)
+
+        // 计算缩放（FIT_CENTER 模式）
+        val scale = minOf(vw / rotatedW, vh / rotatedH)
         val offsetX = (vw - rotatedW * scale) / 2f
         val offsetY = (vh - rotatedH * scale) / 2f
 
@@ -271,7 +246,6 @@ class OverlayView @JvmOverloads constructor(
         focusPaint.alpha = a.toInt()
         canvas.drawCircle(focusX, focusY, radius, focusPaint)
 
-        // 十字线
         val crossPaint = Paint(focusPaint).apply { this.alpha = (a * 0.5f).toInt() }
         canvas.drawLine(focusX - 16f, focusY, focusX - 5f, focusY, crossPaint)
         canvas.drawLine(focusX + 5f, focusY, focusX + 16f, focusY, crossPaint)

@@ -17,6 +17,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.LinearLayout
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -46,6 +47,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var previewView: PreviewView
     private lateinit var overlayView: OverlayView
     private lateinit var resultPanel: LinearLayout
+    private lateinit var progressCard: LinearLayout
+    private lateinit var progressBar: ProgressBar
+    private lateinit var progressPercent: TextView
+    private lateinit var decoderStatus: TextView
+    private lateinit var diagnosticInfo: TextView
     private lateinit var btnOpenFile: Button
     private lateinit var btnOpenDir: Button
     private lateinit var btnNextFile: Button
@@ -54,6 +60,13 @@ class MainActivity : AppCompatActivity() {
     private val isProcessing = AtomicBoolean(false)
     private var fileCount = 0
     private var lastSavedFile: File? = null
+    private var isStopped = false
+
+    // 诊断计数
+    private var totalFramesProcessed = 0L
+    private var newFrames = 0L
+    private var duplicateFrames = 0L
+    private var uniqueFrames = 0L
 
     private var currentCamera: Camera? = null
     private lateinit var scaleDetector: ScaleGestureDetector
@@ -92,6 +105,11 @@ class MainActivity : AppCompatActivity() {
         statusText = findViewById(R.id.statusText)
         frameCountText = findViewById(R.id.frameCountText)
         resultPanel = findViewById(R.id.resultPanel)
+        progressCard = findViewById(R.id.progressCard)
+        progressBar = findViewById(R.id.progressBar)
+        progressPercent = findViewById(R.id.progressPercent)
+        decoderStatus = findViewById(R.id.decoderStatus)
+        diagnosticInfo = findViewById(R.id.diagnosticInfo)
         btnOpenFile = findViewById(R.id.btnOpenFile)
         btnOpenDir = findViewById(R.id.btnOpenDir)
         btnNextFile = findViewById(R.id.btnNextFile)
@@ -100,7 +118,6 @@ class MainActivity : AppCompatActivity() {
         decoder = Mobile.newDecoder()
         cameraExecutor = Executors.newSingleThreadExecutor()
 
-        // 恢复文件计数器
         fileCount = prefs.getInt(KEY_FILE_COUNT, 0)
 
         btnOpenFile.setOnClickListener { openFile() }
@@ -168,7 +185,6 @@ class MainActivity : AppCompatActivity() {
                 BarcodeScanning.getClient()
             }
 
-            // 关键优化: 用较低分辨率加速识别 (640x480 足够识别QR码)
             val imageAnalysis = ImageAnalysis.Builder()
                 .setTargetResolution(Size(640, 480))
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
@@ -182,7 +198,6 @@ class MainActivity : AppCompatActivity() {
                 cameraProvider.unbindAll()
                 currentCamera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalysis)
 
-                // 持续自动对焦 + 曝光 (永不取消)
                 currentCamera?.cameraControl?.let { ctrl ->
                     ctrl.startFocusAndMetering(
                         FocusMeteringAction.Builder(
@@ -200,15 +215,21 @@ class MainActivity : AppCompatActivity() {
 
     private fun createAnalyzer(scanner: com.google.mlkit.vision.barcode.BarcodeScanner): ImageAnalysis.Analyzer {
         return ImageAnalysis.Analyzer { imageProxy ->
+            if (isStopped) {
+                imageProxy.close()
+                return@Analyzer
+            }
+
             @SuppressLint("UnsafeOptInUsageError")
             val mediaImage = imageProxy.image
             if (mediaImage != null) {
+                totalFramesProcessed++
                 val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
 
                 scanner.process(image)
                     .addOnSuccessListener { barcodes ->
                         val showOverlay = prefs.getBoolean("show_overlay", true)
-                        if (showOverlay) {
+                        if (showOverlay && barcodes.isNotEmpty()) {
                             runOnUiThread {
                                 overlayView.updateBarcodes(
                                     barcodes,
@@ -219,7 +240,7 @@ class MainActivity : AppCompatActivity() {
                             }
                         }
 
-                        if (!isProcessing.get() && !decoder.isCompleted()) {
+                        if (!isProcessing.get() && !decoder.isCompleted() && barcodes.isNotEmpty()) {
                             for (barcode in barcodes) {
                                 val content = barcode.rawValue ?: continue
                                 if (content.contains("|")) {
@@ -238,28 +259,37 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onQRCodeDetected(content: String) {
-        if (decoder.isCompleted()) return
+        if (decoder.isCompleted() || isStopped) return
         if (!isProcessing.compareAndSet(false, true)) return
 
         try {
+            val prevUnique = decoder.uniqueFrames()
             decoder.decodeChunk(content)
+            val currUnique = decoder.uniqueFrames()
+
+            // 诊断追踪
+            if (currUnique > prevUnique) {
+                newFrames++
+                uniqueFrames = currUnique
+            } else {
+                duplicateFrames++
+            }
 
             runOnUiThread {
+                updateProgressDisplay()
+
                 if (decoder.isCompleted()) {
                     val data = decoder.dataBytes()
                     fileCount++
-                    // 持久化文件计数器
                     prefs.edit().putInt(KEY_FILE_COUNT, fileCount).apply()
                     val savedFile = saveFile(data, fileCount)
 
                     statusText.text = "✅ 解码完成！"
                     frameCountText.text = savedFile?.name ?: ""
                     overlayView.clear()
+                    progressCard.visibility = View.GONE
                     resultPanel.visibility = View.VISIBLE
                     lastSavedFile = savedFile
-                } else {
-                    statusText.text = "⏳ ${decoder.progress()}% (${decoder.uniqueFrames()} 帧)"
-                    frameCountText.text = formatSize(decoder.totalSize())
                 }
             }
         } catch (e: Exception) {
@@ -267,6 +297,22 @@ class MainActivity : AppCompatActivity() {
         } finally {
             isProcessing.set(false)
         }
+    }
+
+    private fun updateProgressDisplay() {
+        val progress = decoder.progress()
+        val unique = decoder.uniqueFrames()
+        val total = decoder.totalFrames()
+
+        progressCard.visibility = View.VISIBLE
+        progressBar.progress = progress
+        progressPercent.text = "$progress% | $unique/$total 帧已接收"
+
+        val cameraState = if (currentCamera != null) "正常" else "未连接"
+        decoderStatus.text = "解码器: 工作中 | 摄像头: $cameraState"
+
+        val uniquePct = if (totalFramesProcessed > 0) (unique * 100 / totalFramesProcessed) else 0
+        diagnosticInfo.text = "诊断: ${newFrames} 新帧 | ${duplicateFrames} 重复 | ${uniquePct}% 唯一 | 0 恢复"
     }
 
     private fun formatSize(bytes: Long): String {
@@ -439,7 +485,6 @@ class MainActivity : AppCompatActivity() {
         val dir = lastSavedFile?.parentFile ?: txqrDir
         if (!dir.exists()) dir.mkdirs()
 
-        // 策略1: 小米文件管理器
         try {
             val intent = Intent().apply {
                 setClassName("com.android.fileexplorer", "com.android.fileexplorer.FileExplorerTabActivity")
@@ -450,7 +495,6 @@ class MainActivity : AppCompatActivity() {
             return
         } catch (_: Exception) {}
 
-        // 策略2: 系统文件管理器
         try {
             val intent = Intent.makeMainSelectorActivity(Intent.ACTION_MAIN, Intent.CATEGORY_APP_FILES)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -458,7 +502,6 @@ class MainActivity : AppCompatActivity() {
             return
         } catch (_: Exception) {}
 
-        // 策略3: file:// URI
         try {
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 data = Uri.fromFile(dir)
@@ -468,7 +511,6 @@ class MainActivity : AppCompatActivity() {
             return
         } catch (_: Exception) {}
 
-        // 策略4: 系统文档选择器
         try {
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -494,9 +536,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // ========== 重新开始/停止 ==========
     private fun resetForNext() {
         decoder.reset()
+        isStopped = false
+        totalFramesProcessed = 0
+        newFrames = 0
+        duplicateFrames = 0
+        uniqueFrames = 0
         resultPanel.visibility = View.GONE
+        progressCard.visibility = View.GONE
         statusText.text = "\u5C06\u6444\u50CF\u5934\u5BF9\u51C6\u4E8C\u7EF4\u7801\u52A8\u753B"
         frameCountText.text = ""
         lastSavedFile = null
