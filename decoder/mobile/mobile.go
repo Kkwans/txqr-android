@@ -69,8 +69,15 @@ func (d *Decoder) DecodeChunk(chunk string) error {
 
 	if d.completed {
 		decoded := d.fd.Decode()
-		raw, err := base64.StdEncoding.DecodeString(string(decoded))
+		decodedStr := string(decoded)
+		// txqr-gif: file -> base64.StdEncoding -> fountain codes
+		// 解码后应为 base64 字符串，需要 base64 解码得到原始文件
+		raw, err := base64.StdEncoding.DecodeString(decodedStr)
 		if err != nil {
+			raw, err = base64.RawStdEncoding.DecodeString(decodedStr)
+		}
+		if err != nil {
+			// base64 解码失败，返回原始数据
 			d.dataBytes = decoded
 		} else {
 			d.dataBytes = raw

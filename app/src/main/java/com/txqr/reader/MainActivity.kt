@@ -1,8 +1,12 @@
 package com.txqr.reader
 
 import android.Manifest
+import android.content.ContentValues
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
 import android.util.Size
 import android.widget.TextView
@@ -16,6 +20,8 @@ import androidx.core.content.ContextCompat
 import mobile.Mobile
 import java.io.File
 import java.io.FileOutputStream
+import java.text.SimpleDateFormat
+import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
@@ -29,11 +35,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var previewView: PreviewView
 
     private val isProcessing = AtomicBoolean(false)
+    private var fileCount = 0
 
     companion object {
         private const val TAG = "TxqrReader"
         private const val REQUEST_CODE_PERMISSIONS = 10
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
+        private const val SAVE_DIR = "TXQR"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,7 +73,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             val imageAnalysis = ImageAnalysis.Builder()
-                .setTargetResolution(Size(1280, 720))
+                .setTargetResolution(Size(1920, 1080))
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
                 .also {
@@ -96,13 +104,14 @@ class MainActivity : AppCompatActivity() {
             runOnUiThread {
                 if (decoder.isCompleted()) {
                     val data = decoder.dataBytes()
-                    saveFile(data)
-                    statusText.text = "✅ 解码完成！已保存 ${formatSize(data.size.toLong())}"
-                    frameCountText.text = "唯一帧数: ${decoder.uniqueFrames()}"
+                    fileCount++
+                    val savedPath = saveFile(data, fileCount)
+                    statusText.text = "✅ 解码完成！已保存 $savedPath"
+                    frameCountText.text = "唯一帧数: ${decoder.uniqueFrames()} | 文件大小: ${formatSize(data.size.toLong())}"
                 } else {
                     val progress = decoder.progress()
                     statusText.text = "⏳ 解码中: $progress% (已接收 ${decoder.uniqueFrames()} 帧)"
-                    frameCountText.text = "总大小: ${formatSize(decoder.totalSize())}"
+                    frameCountText.text = "原始大小: ${formatSize(decoder.totalSize())}"
                 }
             }
         } catch (e: Exception) {
@@ -114,20 +123,36 @@ class MainActivity : AppCompatActivity() {
 
     private fun formatSize(bytes: Long): String {
         return when {
-            bytes >= 1024 * 1024 -> "${bytes / 1024 / 1024} MB"
-            bytes >= 1024 -> "${bytes / 1024} KB"
+            bytes >= 1024 * 1024 -> String.format("%.1f MB", bytes / 1024.0 / 1024.0)
+            bytes >= 1024 -> String.format("%.1f KB", bytes / 1024.0)
             else -> "$bytes B"
         }
     }
 
-    private fun saveFile(data: ByteArray) {
+    /**
+     * 保存文件到 /Download/TXQR/ 目录
+     * 文件名：txqr_序号_时间戳.bin
+     */
+    private fun saveFile(data: ByteArray, count: Int): String {
+        val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        val fileName = "txqr_${count}_${timestamp}.bin"
+        val dirPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        val txqrDir = File(dirPath, SAVE_DIR)
+
+        if (!txqrDir.exists()) {
+            txqrDir.mkdirs()
+        }
+
+        val file = File(txqrDir, fileName)
         try {
-            val file = File(getExternalFilesDir(null), "decoded_file.tar.gz")
             FileOutputStream(file).use { it.write(data) }
-            Toast.makeText(this, "文件已保存: ${file.absolutePath}", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "已保存: ${file.absolutePath}", Toast.LENGTH_LONG).show()
+            Log.d(TAG, "文件已保存: ${file.absolutePath} (${data.size} 字节)")
+            return file.absolutePath
         } catch (e: Exception) {
             Log.e(TAG, "保存失败: ${e.message}")
             Toast.makeText(this, "保存失败: ${e.message}", Toast.LENGTH_SHORT).show()
+            return "保存失败"
         }
     }
 
