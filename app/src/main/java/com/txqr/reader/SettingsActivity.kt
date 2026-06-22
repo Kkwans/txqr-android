@@ -63,6 +63,12 @@ class SettingsActivity : AppCompatActivity() {
         btnOpenSaveDir.setOnClickListener { openSavedDir() }
         findViewById<LinearLayout>(R.id.saveDirRow).setOnClickListener { chooseDirectory() }
         btnBack.setOnClickListener { finish() }
+
+        // GitHub 链接
+        findViewById<TextView>(R.id.tvGithub).setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Kkwans/txqr-android"))
+            startActivity(intent)
+        }
     }
 
     private fun updateDirDisplay() {

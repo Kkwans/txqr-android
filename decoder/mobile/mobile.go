@@ -112,6 +112,17 @@ func (d *Decoder) Progress() int {
 // TotalSize returns original data size in bytes.
 func (d *Decoder) TotalSize() int { return d.total }
 
+// ChunkLen returns the chunk length in bytes.
+func (d *Decoder) ChunkLen() int { return d.chunkLen }
+
+// TotalFrames returns the real total frames (data size / chunk length).
+func (d *Decoder) TotalFrames() int {
+	if d.chunkLen == 0 {
+		return 0
+	}
+	return numberOfChunks(d.total, d.chunkLen)
+}
+
 // UniqueFrames returns count of unique frames received.
 func (d *Decoder) UniqueFrames() int { return d.frameCount }
 

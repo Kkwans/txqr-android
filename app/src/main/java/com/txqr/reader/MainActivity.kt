@@ -4,7 +4,9 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.DocumentsContract
@@ -14,6 +16,7 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
+import android.view.WindowInsetsController
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.LinearLayout
@@ -52,6 +55,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var progressPercent: TextView
     private lateinit var decoderStatus: TextView
     private lateinit var diagnosticInfo: TextView
+    private lateinit var fileInfo: TextView
     private lateinit var btnOpenFile: Button
     private lateinit var btnOpenDir: Button
     private lateinit var btnNextFile: Button
@@ -98,6 +102,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // 沉浸式状态栏 + 导航栏
+        setupImmersiveMode()
+
         setContentView(R.layout.activity_main)
 
         previewView = findViewById(R.id.previewView)
@@ -110,6 +118,7 @@ class MainActivity : AppCompatActivity() {
         progressPercent = findViewById(R.id.progressPercent)
         decoderStatus = findViewById(R.id.decoderStatus)
         diagnosticInfo = findViewById(R.id.diagnosticInfo)
+        fileInfo = findViewById(R.id.fileInfo)
         btnOpenFile = findViewById(R.id.btnOpenFile)
         btnOpenDir = findViewById(R.id.btnOpenDir)
         btnNextFile = findViewById(R.id.btnNextFile)
@@ -133,6 +142,26 @@ class MainActivity : AppCompatActivity() {
             startCamera()
         } else {
             ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
+        }
+    }
+
+    /** 沉浸式模式：透明状态栏+导航栏，内容延伸到系统栏 */
+    private fun setupImmersiveMode() {
+        window.statusBarColor = Color.TRANSPARENT
+        window.navigationBarColor = Color.TRANSPARENT
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            window.insetsController?.let {
+                it.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
+        } else {
+            @Suppress("DEPRECATION")
+            window.decorView.systemUiVisibility = (
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            )
         }
     }
 
@@ -267,7 +296,6 @@ class MainActivity : AppCompatActivity() {
             decoder.decodeChunk(content)
             val currUnique = decoder.uniqueFrames().toInt()
 
-            // 诊断追踪
             if (currUnique > prevUnique) {
                 newFrames++
                 uniqueFrames = currUnique
@@ -302,17 +330,31 @@ class MainActivity : AppCompatActivity() {
     private fun updateProgressDisplay() {
         val progress = decoder.progress().toInt()
         val unique = decoder.uniqueFrames().toInt()
-        val total = decoder.totalSize().toInt()
+        val totalFrames = decoder.totalFrames().toInt()
+        val dataSize = decoder.totalSize().toInt()
+        val chunkLen = decoder.chunkLen().toInt()
 
         progressCard.visibility = View.VISIBLE
         progressBar.progress = progress
-        progressPercent.text = "$progress% | $unique/$total 帧已接收"
+
+        // 帧数显示：已接收/总帧数
+        progressPercent.text = "$progress% | $unique/$totalFrames 帧"
+
+        // 文件信息：后缀名 + 大小
+        val ext = if (dataSize > 0) detectDataExtension(dataSize) else ""
+        val sizeStr = if (dataSize > 0) formatSize(dataSize.toLong()) else ""
+        fileInfo.text = when {
+            ext.isNotEmpty() && sizeStr.isNotEmpty() -> "$ext · $sizeStr"
+            ext.isNotEmpty() -> ext
+            sizeStr.isNotEmpty() -> sizeStr
+            else -> ""
+        }
 
         val cameraState = if (currentCamera != null) "正常" else "未连接"
         decoderStatus.text = "解码器: 工作中 | 摄像头: $cameraState"
 
         val uniquePct = if (totalFramesProcessed > 0) (unique * 100 / totalFramesProcessed) else 0
-        diagnosticInfo.text = "诊断: ${newFrames} 新帧 | ${duplicateFrames} 重复 | ${uniquePct}% 唯一 | 0 恢复"
+        diagnosticInfo.text = "诊断: ${newFrames} 新帧 | ${duplicateFrames} 重复 | ${uniquePct}% 唯一"
     }
 
     private fun formatSize(bytes: Long): String {
@@ -321,6 +363,13 @@ class MainActivity : AppCompatActivity() {
             bytes >= 1024 -> String.format("%.1f KB", bytes / 1024.0)
             else -> "$bytes B"
         }
+    }
+
+    /** 根据数据大小猜测文件类型（用于显示） */
+    private fun detectDataExtension(dataSize: Int): String {
+        // 这里无法准确判断，因为还没解码完成
+        // 返回空字符串，等解码完成后再显示
+        return ""
     }
 
     private fun detectExtension(data: ByteArray): String {
@@ -536,7 +585,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ========== 重新开始/停止 ==========
+    // ========== 重新开始 ==========
     private fun resetForNext() {
         decoder.reset()
         isStopped = false
