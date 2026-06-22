@@ -240,21 +240,21 @@ class OverlayView @JvmOverloads constructor(
         val elapsed = System.currentTimeMillis() % 1500
         val progress = elapsed / 1500f
         val expand = 8f + progress * 20f
-        val alpha = (155 * (1 - progress)).toInt()
+        val al = (155 * (1 - progress)).toInt()
 
         pulsePaint.color = color
-        pulsePaint.alpha = alpha
+        pulsePaint.alpha = al
 
         val expand2 = expand * 0.6f
-        val alpha2 = (100 * (1 - progress)).toInt()
-        pulsePaint.alpha = alpha2
+        val al2 = (100 * (1 - progress)).toInt()
+        pulsePaint.alpha = al2
 
         canvas.drawRect(
             rect.left - expand, rect.top - expand,
             rect.right + expand, rect.bottom + expand,
             pulsePaint
         )
-        pulsePaint.alpha = alpha
+        pulsePaint.alpha = al
         canvas.drawRect(
             rect.left - expand2, rect.top - expand2,
             rect.right + expand2, rect.bottom + expand2,
@@ -270,16 +270,16 @@ class OverlayView @JvmOverloads constructor(
         }
 
         val progress = elapsed / FOCUS_ANIM_MS.toFloat()
-        val alpha = (255 * (1 - progress)).toInt()
+        val a = (255 * (1 - progress)).toInt()
         val radius = 24f + progress * 40f
 
-        focusPaint.alpha = alpha
-        val fill = Paint(focusPaint).apply { style = Paint.Style.FILL; alpha = alpha / 3 }
+        focusPaint.alpha = a
+        val fill = Paint(focusPaint).apply { style = Paint.Style.FILL; this.alpha = a / 3 }
         canvas.drawCircle(x, y, radius, fill)
         canvas.drawCircle(x, y, radius, focusPaint)
 
         // 十字线
-        val crossPaint = Paint(focusPaint).apply { alpha = alpha / 2 }
+        val crossPaint = Paint(focusPaint).apply { this.alpha = a / 2 }
         canvas.drawLine(x - 20f, y, x - 6f, y, crossPaint)
         canvas.drawLine(x + 6f, y, x + 20f, y, crossPaint)
         canvas.drawLine(x, y - 20f, x, y - 6f, crossPaint)
@@ -289,7 +289,7 @@ class OverlayView @JvmOverloads constructor(
         if (elapsed < 500) {
             val checkPaint = Paint(focusPaint).apply {
                 color = Color.parseColor("#4CAF50")
-                alpha = alpha
+                this.alpha = a
                 strokeWidth = 4f
             }
             canvas.drawLine(x - 10f, y, x - 3f, y + 7f, checkPaint)
