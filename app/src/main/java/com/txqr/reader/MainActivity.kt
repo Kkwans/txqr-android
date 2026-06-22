@@ -1,12 +1,9 @@
 package com.txqr.reader
 
 import android.Manifest
-import android.content.ContentValues
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import android.os.Environment
-import android.provider.MediaStore
 import android.util.Log
 import android.util.Size
 import android.widget.TextView
@@ -107,7 +104,7 @@ class MainActivity : AppCompatActivity() {
                     fileCount++
                     val savedPath = saveFile(data, fileCount)
                     statusText.text = "✅ 解码完成！已保存 $savedPath"
-                    frameCountText.text = "唯一帧数: ${decoder.uniqueFrames()} | 文件大小: ${formatSize(data.size.toLong())}"
+                    frameCountText.text = "唯一帧数: ${decoder.uniqueFrames()} | 大小: ${formatSize(data.size.toLong())}"
                 } else {
                     val progress = decoder.progress()
                     statusText.text = "⏳ 解码中: $progress% (已接收 ${decoder.uniqueFrames()} 帧)"
@@ -130,12 +127,57 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
+     * 根据文件头魔数推断文件扩展名
+     */
+    private fun detectExtension(data: ByteArray): String {
+        if (data.size < 4) return ""
+        val b = data
+
+        return when {
+            // PNG
+            b[0] == 0x89.toByte() && b[1] == 0x50.toByte() && b[2] == 0x4E.toByte() && b[3] == 0x47.toByte() -> ".png"
+            // JPEG
+            b[0] == 0xFF.toByte() && b[1] == 0xD8.toByte() && b[2] == 0xFF.toByte() -> ".jpg"
+            // GIF
+            b[0] == 0x47.toByte() && b[1] == 0x49.toByte() && b[2] == 0x46.toByte() -> ".gif"
+            // PDF
+            b[0] == 0x25.toByte() && b[1] == 0x50.toByte() && b[2] == 0x44.toByte() && b[3] == 0x46.toByte() -> ".pdf"
+            // ZIP / APK / DOCX / XLSX
+            b[0] == 0x50.toByte() && b[1] == 0x4B.toByte() && b[2] == 0x03.toByte() && b[3] == 0x04.toByte() -> ".zip"
+            // RAR
+            b[0] == 0x52.toByte() && b[1] == 0x61.toByte() && b[2] == 0x72.toByte() && b[3] == 0x21.toByte() -> ".rar"
+            // 7Z
+            b[0] == 0x37.toByte() && b[1] == 0x7A.toByte() && b[2] == 0xBC.toByte() && b[3] == 0xAF.toByte() -> ".7z"
+            // GZIP (tar.gz)
+            b[0] == 0x1F.toByte() && b[1] == 0x8B.toByte() -> ".tar.gz"
+            // TAR (ustar magic)
+            data.size > 263 && b[257] == 0x75.toByte() && b[258] == 0x73.toByte() && b[259] == 0x74.toByte() && b[260] == 0x61.toByte() -> ".tar"
+            // BMP
+            b[0] == 0x42.toByte() && b[1] == 0x4D.toByte() -> ".bmp"
+            // WEBP
+            data.size > 12 && b[8] == 0x57.toByte() && b[9] == 0x45.toByte() && b[10] == 0x42.toByte() && b[11] == 0x50.toByte() -> ".webp"
+            // MP4/MOV (ftyp box)
+            data.size > 4 && b[4] == 0x66.toByte() && b[5] == 0x74.toByte() && b[6] == 0x79.toByte() && b[7] == 0x70.toByte() -> ".mp4"
+            // ELF (Linux binary)
+            b[0] == 0x7F.toByte() && b[1] == 0x45.toByte() && b[2] == 0x4C.toByte() && b[3] == 0x46.toByte() -> ""
+            // HTML
+            data.size > 10 -> {
+                val head = String(b, 0, minOf(100, b.size)).lowercase()
+                if (head.contains("<!doctype") || head.contains("<html")) ".html" else ""
+            }
+            else -> ""
+        }
+    }
+
+    /**
      * 保存文件到 /Download/TXQR/ 目录
-     * 文件名：txqr_序号_时间戳.bin
+     * 通过魔数推断文件类型，使用正确扩展名
      */
     private fun saveFile(data: ByteArray, count: Int): String {
         val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-        val fileName = "txqr_${count}_${timestamp}.bin"
+        val ext = detectExtension(data)
+        val fileName = "txqr_${count}_${timestamp}$ext"
+
         val dirPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
         val txqrDir = File(dirPath, SAVE_DIR)
 
@@ -146,8 +188,8 @@ class MainActivity : AppCompatActivity() {
         val file = File(txqrDir, fileName)
         try {
             FileOutputStream(file).use { it.write(data) }
-            Toast.makeText(this, "已保存: ${file.absolutePath}", Toast.LENGTH_LONG).show()
-            Log.d(TAG, "文件已保存: ${file.absolutePath} (${data.size} 字节)")
+            Toast.makeText(this, "已保存: ${file.name}", Toast.LENGTH_LONG).show()
+            Log.d(TAG, "文件已保存: ${file.absolutePath} (${data.size} 字节, 类型: $ext)")
             return file.absolutePath
         } catch (e: Exception) {
             Log.e(TAG, "保存失败: ${e.message}")
