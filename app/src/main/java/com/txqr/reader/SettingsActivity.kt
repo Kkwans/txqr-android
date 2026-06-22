@@ -29,7 +29,6 @@ class SettingsActivity : AppCompatActivity() {
         const val KEY_SHOW_OVERLAY = "show_overlay"
         const val KEY_AUTO_FOCUS = "auto_focus"
         const val REQUEST_CODE_OPEN_DOCUMENT_TREE = 1001
-        const val REQUEST_CODE_OPEN_DIR = 1002
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,7 +44,6 @@ class SettingsActivity : AppCompatActivity() {
         val switchAutoFocus = findViewById<Switch>(R.id.switchAutoFocus)
         val btnBack = findViewById<ImageButton>(R.id.btnBack)
 
-        // 显示当前保存路径
         updateDirDisplay()
 
         switchQrOnly.isChecked = prefs.getBoolean(KEY_QR_ONLY, true)
@@ -62,31 +60,36 @@ class SettingsActivity : AppCompatActivity() {
             prefs.edit().putBoolean(KEY_AUTO_FOCUS, isChecked).apply()
         }
 
-        // 查看保存目录 — 直接打开到文件所在位置
         btnOpenSaveDir.setOnClickListener { openSavedDir() }
-
-        // 设置保存目录 — SAF 系统文件选择器
         findViewById<LinearLayout>(R.id.saveDirRow).setOnClickListener { chooseDirectory() }
-
         btnBack.setOnClickListener { finish() }
     }
 
     private fun updateDirDisplay() {
-        val savedUri = prefs.getString(KEY_SAVE_DIR_URI, "") ?: ""
         val savedPath = prefs.getString(KEY_SAVE_DIR, "") ?: ""
+        val savedUri = prefs.getString(KEY_SAVE_DIR_URI, "") ?: ""
         tvSaveDir.text = when {
-            savedPath.isNotEmpty() -> savedPath
+            savedPath.isNotEmpty() -> cleanPath(savedPath)
             savedUri.isNotEmpty() -> "已选择目录"
             else -> "/Download/TXQR"
         }
     }
 
+    /** 去掉 /storage/emulated/0 前缀，保持统一格式 */
+    private fun cleanPath(path: String): String {
+        return path
+            .removePrefix("/storage/emulated/0")
+            .let { if (it.startsWith("/")) it else "/$it" }
+    }
+
     private fun chooseDirectory() {
         try {
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or
-                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION or
-                        Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+                addFlags(
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION or
+                    Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+                )
             }
             startActivityForResult(intent, REQUEST_CODE_OPEN_DOCUMENT_TREE)
         } catch (e: Exception) {
@@ -101,23 +104,24 @@ class SettingsActivity : AppCompatActivity() {
 
             // 持久化 URI 权限
             try {
-                contentResolver.takePersistableUriPermission(uri,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                contentResolver.takePersistableUriPermission(
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                )
             } catch (_: Exception) {}
 
             // 保存 SAF URI
             prefs.edit().putString(KEY_SAVE_DIR_URI, uri.toString()).apply()
 
-            // 尝试提取真实路径用于显示
+            // 提取真实路径并去掉 /storage/emulated/0 前缀
             val path = getPathFromTreeUri(uri)
             if (path != null) {
                 prefs.edit().putString(KEY_SAVE_DIR, path).apply()
-                tvSaveDir.text = path
+                tvSaveDir.text = cleanPath(path)
             } else {
-                // 即使无法提取路径，也保存 URI
                 val docId = DocumentsContract.getTreeDocumentId(uri)
                 val displayName = docId.split(":").lastOrNull() ?: "已选择目录"
-                tvSaveDir.text = displayName
+                tvSaveDir.text = "/$displayName"
                 prefs.edit().putString(KEY_SAVE_DIR, "").apply()
             }
 
@@ -125,24 +129,21 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    /** 打开保存目录到具体位置 */
+    /** 打开保存目录 — 直接跳转到文件管理器的对应目录 */
     private fun openSavedDir() {
-        val savedUri = prefs.getString(KEY_SAVE_DIR_URI, "") ?: ""
         val savedPath = prefs.getString(KEY_SAVE_DIR, "") ?: ""
+        val savedUri = prefs.getString(KEY_SAVE_DIR_URI, "") ?: ""
 
+        // 有真实路径时，直接用 file:// URI 打开
+        if (savedPath.isNotEmpty()) {
+            val dir = File(savedPath)
+            if (!dir.exists()) dir.mkdirs()
+            openDirWithFileManager(dir)
+            return
+        }
+
+        // 有 SAF URI 时，用 ACTION_OPEN_DOCUMENT_TREE 打开到该位置
         if (savedUri.isNotEmpty()) {
-            // 有 SAF URI — 用 ACTION_VIEW 打开到该目录
-            try {
-                val treeUri = Uri.parse(savedUri)
-                val intent = Intent(Intent.ACTION_VIEW).apply {
-                    setDataAndType(treeUri, "vnd.android.document/directory")
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                }
-                startActivity(intent)
-                return
-            } catch (_: Exception) {}
-
-            // 回退: 用 ACTION_OPEN_DOCUMENT_TREE 打开到该位置
             try {
                 val treeUri = Uri.parse(savedUri)
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
@@ -154,22 +155,15 @@ class SettingsActivity : AppCompatActivity() {
             } catch (_: Exception) {}
         }
 
-        if (savedPath.isNotEmpty()) {
-            // 有真实路径 — 尝试各种方式打开
-            val dir = File(savedPath)
-            if (!dir.exists()) dir.mkdirs()
-            openDirByPath(dir)
-            return
-        }
-
         // 默认目录
         val dir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "TXQR")
         if (!dir.exists()) dir.mkdirs()
-        openDirByPath(dir)
+        openDirWithFileManager(dir)
     }
 
-    private fun openDirByPath(dir: File) {
-        // 策略1: 小米文件管理器 (直接跳转到目录)
+    /** 尝试用各种方式打开目录到具体位置 */
+    private fun openDirWithFileManager(dir: File) {
+        // 策略1: 小米文件管理器 (com.android.fileexplorer)
         try {
             val intent = Intent().apply {
                 setClassName("com.android.fileexplorer", "com.android.fileexplorer.FileExplorerTabActivity")
@@ -180,17 +174,15 @@ class SettingsActivity : AppCompatActivity() {
             return
         } catch (_: Exception) {}
 
-        // 策略2: DocumentsUI
+        // 策略2: 系统文件管理器 (API 30+)
         try {
-            val intent = Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(Uri.fromFile(dir), "resource/folder")
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
+            val intent = Intent.makeMainSelectorActivity(Intent.ACTION_MAIN, Intent.CATEGORY_APP_FILES)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(intent)
             return
         } catch (_: Exception) {}
 
-        // 策略3: file:// URI
+        // 策略3: file:// URI + 通用 intent
         try {
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 data = Uri.fromFile(dir)
@@ -210,7 +202,6 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    /** 从 SAF tree URI 提取真实路径 */
     private fun getPathFromTreeUri(uri: Uri): String? {
         return try {
             val docId = DocumentsContract.getTreeDocumentId(uri)

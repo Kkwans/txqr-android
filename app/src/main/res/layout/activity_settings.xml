@@ -11,19 +11,19 @@
         android:layout_height="52dp"
         android:gravity="center_vertical"
         android:background="#FFFFFF"
-        android:paddingHorizontal="12dp"
+        android:paddingHorizontal="8dp"
         android:elevation="2dp">
 
         <ImageButton
             android:id="@+id/btnBack"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@android:drawable/ic_menu_revert"
-            android:background="@android:color/transparent"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:src="@drawable/ic_back"
+            android:background="@drawable/bg_rounded_btn"
             android:contentDescription="返回"
             android:tint="#212121"
             android:scaleType="center"
-            android:padding="8dp" />
+            android:padding="10dp" />
 
         <TextView
             android:layout_width="0dp"
@@ -33,7 +33,7 @@
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="#212121"
-            android:layout_marginStart="8dp" />
+            android:layout_marginStart="12dp" />
     </LinearLayout>
 
     <ScrollView
@@ -52,7 +52,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:background="#FFFFFF"
+                android:background="@drawable/bg_card"
                 android:padding="16dp"
                 android:layout_marginBottom="12dp"
                 android:elevation="1dp">
@@ -62,8 +62,9 @@
                     android:layout_height="wrap_content"
                     android:text="文件保存"
                     android:textColor="#1976D2"
-                    android:textSize="13sp"
+                    android:textSize="12sp"
                     android:textStyle="bold"
+                    android:letterSpacing="0.08"
                     android:layout_marginBottom="12dp" />
 
                 <LinearLayout
@@ -74,7 +75,7 @@
                     android:gravity="center_vertical"
                     android:clickable="true"
                     android:focusable="true"
-                    android:background="#F5F5F5"
+                    android:background="@drawable/bg_card_input"
                     android:padding="14dp">
 
                     <TextView
@@ -121,7 +122,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:background="#FFFFFF"
+                android:background="@drawable/bg_card"
                 android:padding="16dp"
                 android:layout_marginBottom="12dp"
                 android:elevation="1dp">
@@ -131,8 +132,9 @@
                     android:layout_height="wrap_content"
                     android:text="扫描设置"
                     android:textColor="#1976D2"
-                    android:textSize="13sp"
+                    android:textSize="12sp"
                     android:textStyle="bold"
+                    android:letterSpacing="0.08"
                     android:layout_marginBottom="12dp" />
 
                 <LinearLayout
@@ -162,7 +164,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="#EEEEEE" />
+                    android:background="#F0F0F0" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -191,7 +193,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="#EEEEEE" />
+                    android:background="#F0F0F0" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -223,7 +225,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:background="#FFFFFF"
+                android:background="@drawable/bg_card"
                 android:padding="16dp"
                 android:layout_marginBottom="12dp"
                 android:elevation="1dp">
@@ -233,8 +235,9 @@
                     android:layout_height="wrap_content"
                     android:text="关于"
                     android:textColor="#1976D2"
-                    android:textSize="13sp"
+                    android:textSize="12sp"
                     android:textStyle="bold"
+                    android:letterSpacing="0.08"
                     android:layout_marginBottom="12dp" />
 
                 <LinearLayout
@@ -255,7 +258,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="v2.2.0 · 离线二维码文件传输"
+                        android:text="v2.3.0 · 离线二维码文件传输"
                         android:textColor="#9E9E9E"
                         android:textSize="12sp"
                         android:layout_marginTop="4dp" />

@@ -1,324 +1,281 @@
 package com.txqr.reader
 
+import android.animation.ValueAnimator
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.Path
-import android.graphics.RectF
+import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
 import com.google.mlkit.vision.barcode.common.Barcode
 
-/**
- * 二维码识别框叠加层
- * 在识别到二维码时绘制高亮边框、角标、脉冲动画、对焦点
- */
 class OverlayView @JvmOverloads constructor(
-    context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
-) : View(context, attrs, defStyleAttr) {
+    context: Context, attrs: AttributeSet? = null
+) : View(context, attrs) {
 
-    // 边框颜色：检测中黄色，检测完成绿色
-    private val scanningColor = Color.parseColor("#FFD740")      // 扫描中 - 黄色
-    private val detectedColor = Color.parseColor("#4CAF50")      // 已检测 - 绿色
-    private val cornerColor = Color.parseColor("#FFD740")        // 角标 - 亮黄色
+    private var barcodes: List<Barcode> = emptyList()
+    private var imageWidth = 0
+    private var imageHeight = 0
+    private var viewWidth = 0
+    private var viewHeight = 0
+    private var rotation = 0
 
-    private val borderPaint = Paint().apply {
-        style = Paint.Style.STROKE
-        strokeWidth = 3f
-        isAntiAlias = true
-    }
+    // 焦点动画
+    private var focusX = 0f
+    private var focusY = 0f
+    private var focusStartTime = 0L
+    private val FOCUS_ANIM_MS = 800L
 
+    // 识别框持续显示
+    private var lastDetectTime = 0L
+    private val DETECT_HOLD_MS = 300L
+
+    // 脉冲动画
+    private var pulseAnimator: ValueAnimator? = null
+    private var pulseProgress = 0f
+
+    // 画笔 - 识别框（绿色半透明填充 + 绿色边框）
     private val fillPaint = Paint().apply {
+        color = Color.parseColor("#334CAF50")
         style = Paint.Style.FILL
         isAntiAlias = true
     }
-
-    private val cornerPaint = Paint().apply {
-        color = cornerColor
+    private val borderPaint = Paint().apply {
+        color = Color.parseColor("#4CAF50")
         style = Paint.Style.STROKE
-        strokeWidth = 8f
+        strokeWidth = 3f
+        isAntiAlias = true
+        strokeCap = Paint.Cap.ROUND
+        strokeJoin = Paint.Join.ROUND
+    }
+    // 角标画笔（橙色加粗）
+    private val cornerPaint = Paint().apply {
+        color = Color.parseColor("#FF9800")
+        style = Paint.Style.STROKE
+        strokeWidth = 5f
         isAntiAlias = true
         strokeCap = Paint.Cap.ROUND
     }
-
-    private val gridPaint = Paint().apply {
-        style = Paint.Style.STROKE
-        strokeWidth = 1f
-        isAntiAlias = true
-    }
-
-    private val pulsePaint = Paint().apply {
+    // 焦点画笔
+    private val focusPaint = Paint().apply {
+        color = Color.WHITE
         style = Paint.Style.STROKE
         strokeWidth = 2f
         isAntiAlias = true
     }
-
-    // 对焦点
-    private val focusPaint = Paint().apply {
-        color = Color.WHITE
-        style = Paint.Style.STROKE
-        strokeWidth = 3f
+    // 扫描线画笔
+    private val scanLinePaint = Paint().apply {
+        color = Color.parseColor("#4CAF50")
+        style = Paint.Style.FILL
         isAntiAlias = true
-    }
-
-    private var boxes: List<RectF> = emptyList()
-    private var lastDetectedTime = 0L
-    private var focusPoint: Pair<Float, Float>? = null
-    private var focusAnimStart = 0L
-
-    companion object {
-        private const val BOX_PERSIST_MS = 500L   // 识别框持续显示时间
-        private const val FOCUS_ANIM_MS = 1200L    // 对焦点动画时长
-        private const val PULSE_FRAME = 16L         // 60fps
+        alpha = 80
     }
 
     fun updateBarcodes(
-        barcodes: List<Barcode>,
-        imageWidth: Int, imageHeight: Int,
-        viewWidth: Int, viewHeight: Int,
-        rotationDegrees: Int
+        detected: List<Barcode>,
+        imgW: Int, imgH: Int,
+        vW: Int, vH: Int,
+        imgRotation: Int
     ) {
-        val newBoxes = barcodes.mapNotNull { barcode ->
-            barcode.boundingBox?.let { rect ->
-                mapToViewRect(rect, imageWidth, imageHeight, viewWidth, viewHeight, rotationDegrees)
-            }
-        }
-        if (newBoxes.isNotEmpty()) {
-            boxes = newBoxes
-            lastDetectedTime = System.currentTimeMillis()
-            invalidate()
-        } else if (boxes.isNotEmpty()) {
-            // 没有新检测到时，保持旧框一小段时间再消失
-            if (System.currentTimeMillis() - lastDetectedTime > BOX_PERSIST_MS) {
-                boxes = emptyList()
-                invalidate()
-            } else {
-                // 还在持续时间内，继续显示 + 动画
-                postInvalidateDelayed(PULSE_FRAME)
-            }
-        }
+        barcodes = detected
+        imageWidth = imgW
+        imageHeight = imgH
+        viewWidth = vW
+        viewHeight = vH
+        rotation = imgRotation
+        lastDetectTime = System.currentTimeMillis()
+        invalidate()
     }
 
     fun showFocusPoint(x: Float, y: Float) {
-        focusPoint = Pair(x, y)
-        focusAnimStart = System.currentTimeMillis()
+        focusX = x
+        focusY = y
+        focusStartTime = System.currentTimeMillis()
         invalidate()
     }
 
     fun clear() {
-        boxes = emptyList()
-        lastDetectedTime = 0L
+        barcodes = emptyList()
+        lastDetectTime = 0L
         invalidate()
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        if (width == 0 || height == 0) return
 
-        // 画暗角
-        canvas.drawColor(Color.parseColor("#08000000"))
+        val now = System.currentTimeMillis()
 
-        // 绘制扫描区域框（始终显示）
+        // 绘制扫描区域参考框
         drawScanArea(canvas)
 
-        // 绘制二维码识别框
-        if (boxes.isNotEmpty()) {
-            val elapsed = System.currentTimeMillis() - lastDetectedTime
-            val isScanning = elapsed < 200
-
-            for (box in boxes) {
-                // 填充
-                fillPaint.color = if (isScanning) Color.parseColor("#33FFD740") else Color.parseColor("#334CAF50")
-                canvas.drawRect(box, fillPaint)
-
-                // 边框
-                borderPaint.color = if (isScanning) scanningColor else detectedColor
-                canvas.drawRect(box, borderPaint)
-
-                // 角标
-                drawCorners(canvas, box)
-
-                // 网格（扫描中显示）
-                if (isScanning) {
-                    gridPaint.color = scanningColor
-                    gridPaint.alpha = 60
-                    drawGrid(canvas, box)
-                }
-
-                // 脉冲
-                drawPulse(canvas, box, scanningColor)
+        // 绘制识别到的二维码精确框
+        if (barcodes.isNotEmpty() || now - lastDetectTime < DETECT_HOLD_MS) {
+            for (barcode in barcodes) {
+                drawBarcodeOutline(canvas, barcode)
             }
-
-            // 继续动画
-            postInvalidateDelayed(PULSE_FRAME)
         }
 
-        // 绘制对焦点
-        focusPoint?.let { (x, y) ->
-            drawFocusPoint(canvas, x, y)
+        // 绘制焦点动画
+        if (focusStartTime > 0 && now - focusStartTime < FOCUS_ANIM_MS) {
+            drawFocusAnim(canvas, now)
+            postInvalidateDelayed(16)
+        }
+
+        // 持续重绘（如果有识别结果）
+        if (barcodes.isNotEmpty()) {
+            postInvalidateDelayed(50)
         }
     }
 
+    /** 绘制屏幕中央的扫描区域参考线 */
     private fun drawScanArea(canvas: Canvas) {
         val cw = width.toFloat() / 2f
         val ch = height.toFloat() / 2f
-        val size = minOf(width, height).toFloat() * 0.7f
+        val size = minOf(width, height).toFloat() * 0.65f
         val l = cw - size / 2f
         val t = ch - size / 2f
         val r = l + size
         val b = t + size
 
-        val scanPaint = Paint().apply {
-            color = Color.WHITE
-            style = Paint.Style.STROKE
-            strokeWidth = 2f
-            alpha = 50
-            isAntiAlias = true
+        // 暗色遮罩（扫描区域外）
+        val maskPaint = Paint().apply {
+            color = Color.parseColor("#33000000")
+            style = Paint.Style.FILL
         }
-        canvas.drawRect(l, t, r, b, scanPaint)
+        canvas.drawRect(0f, 0f, width.toFloat(), t, maskPaint)
+        canvas.drawRect(0f, t, l, b, maskPaint)
+        canvas.drawRect(r, t, width.toFloat(), b, maskPaint)
+        canvas.drawRect(0f, b, width.toFloat(), height.toFloat(), maskPaint)
 
-        val cornerLen = 30f
-        val cornerScanPaint = Paint().apply {
-            color = Color.parseColor("#4CAF50")
+        // 虚线边框
+        val dashPaint = Paint().apply {
+            color = Color.parseColor("#80FFFFFF")
             style = Paint.Style.STROKE
-            strokeWidth = 3f
-            alpha = 100
+            strokeWidth = 1f
+            isAntiAlias = true
+            pathEffect = DashPathEffect(floatArrayOf(8f, 8f), 0f)
+        }
+        canvas.drawRect(l, t, r, b, dashPaint)
+
+        // 四角短标
+        val cornerLen = 24f
+        val cPaint = Paint().apply {
+            color = Color.parseColor("#FFFFFF")
+            style = Paint.Style.STROKE
+            strokeWidth = 2.5f
             isAntiAlias = true
             strokeCap = Paint.Cap.ROUND
         }
-
-        canvas.drawLine(l, t + cornerLen, l, t, cornerScanPaint)
-        canvas.drawLine(l, t, l + cornerLen, t, cornerScanPaint)
-
-        canvas.drawLine(r - cornerLen, t, r, t, cornerScanPaint)
-        canvas.drawLine(r, t, r, t + cornerLen, cornerScanPaint)
-
-        canvas.drawLine(r, b - cornerLen, r, b, cornerScanPaint)
-        canvas.drawLine(r, b, r - cornerLen, b, cornerScanPaint)
-
-        canvas.drawLine(l, b - cornerLen, l, b, cornerScanPaint)
-        canvas.drawLine(l, b, l + cornerLen, b, cornerScanPaint)
+        canvas.drawLine(l, t + cornerLen, l, t, cPaint)
+        canvas.drawLine(l, t, l + cornerLen, t, cPaint)
+        canvas.drawLine(r - cornerLen, t, r, t, cPaint)
+        canvas.drawLine(r, t, r, t + cornerLen, cPaint)
+        canvas.drawLine(r, b - cornerLen, r, b, cPaint)
+        canvas.drawLine(r, b, r - cornerLen, b, cPaint)
+        canvas.drawLine(l, b - cornerLen, l, b, cPaint)
+        canvas.drawLine(l, b, l + cornerLen, b, cPaint)
     }
 
-    private fun drawCorners(canvas: Canvas, rect: RectF) {
-        val len = 40f
-        val path = Path()
-        path.moveTo(rect.left, rect.top + len)
-        path.lineTo(rect.left, rect.top)
-        path.lineTo(rect.left + len, rect.top)
+    /** 绘制二维码精确边界（使用角点坐标） */
+    private fun drawBarcodeOutline(canvas: Canvas, barcode: Barcode) {
+        val points = barcode.cornerPoints
+        if (points == null || points.size < 4) return
 
-        path.moveTo(rect.right - len, rect.top)
-        path.lineTo(rect.right, rect.top)
-        path.lineTo(rect.right, rect.top + len)
-
-        path.moveTo(rect.right, rect.bottom - len)
-        path.lineTo(rect.right, rect.bottom)
-        path.lineTo(rect.right - len, rect.bottom)
-
-        path.moveTo(rect.left + len, rect.bottom)
-        path.lineTo(rect.left, rect.bottom)
-        path.lineTo(rect.left, rect.bottom - len)
-
-        canvas.drawPath(path, cornerPaint)
-    }
-
-    private fun drawGrid(canvas: Canvas, rect: RectF) {
-        val step = 20f
-        var x = rect.left
-        while (x < rect.right) {
-            canvas.drawLine(x, rect.top, x, rect.bottom, gridPaint)
-            x += step
-        }
-        var y = rect.top
-        while (y < rect.bottom) {
-            canvas.drawLine(rect.left, y, rect.right, y, gridPaint)
-            y += step
-        }
-    }
-
-    private fun drawPulse(canvas: Canvas, rect: RectF, color: Int) {
-        val elapsed = System.currentTimeMillis() % 1500
-        val progress = elapsed / 1500f
-        val expand = 8f + progress * 20f
-        val al = (155 * (1 - progress)).toInt()
-
-        pulsePaint.color = color
-        pulsePaint.alpha = al
-
-        val expand2 = expand * 0.6f
-        val al2 = (100 * (1 - progress)).toInt()
-        pulsePaint.alpha = al2
-
-        canvas.drawRect(
-            rect.left - expand, rect.top - expand,
-            rect.right + expand, rect.bottom + expand,
-            pulsePaint
-        )
-        pulsePaint.alpha = al
-        canvas.drawRect(
-            rect.left - expand2, rect.top - expand2,
-            rect.right + expand2, rect.bottom + expand2,
-            pulsePaint
-        )
-    }
-
-    private fun drawFocusPoint(canvas: Canvas, x: Float, y: Float) {
-        val elapsed = System.currentTimeMillis() - focusAnimStart
-        if (elapsed >= FOCUS_ANIM_MS) {
-            focusPoint = null
-            return
+        // 将图像坐标映射到视图坐标
+        val mappedPoints = points.map { p ->
+            mapPoint(p.x.toFloat(), p.y.toFloat())
         }
 
-        val progress = elapsed / FOCUS_ANIM_MS.toFloat()
-        val a = (255 * (1 - progress)).toInt()
-        val radius = 24f + progress * 40f
+        // 绘制填充
+        val path = Path().apply {
+            moveTo(mappedPoints[0].x, mappedPoints[0].y)
+            for (i in 1 until mappedPoints.size) {
+                lineTo(mappedPoints[i].x, mappedPoints[i].y)
+            }
+            close()
+        }
+        canvas.drawPath(path, fillPaint)
 
-        focusPaint.alpha = a
-        val fill = Paint(focusPaint).apply { style = Paint.Style.FILL; this.alpha = a / 3 }
-        canvas.drawCircle(x, y, radius, fill)
-        canvas.drawCircle(x, y, radius, focusPaint)
+        // 绘制边框
+        canvas.drawPath(path, borderPaint)
+
+        // 绘制四角加粗标记
+        val cornerLen = 16f
+        for (i in mappedPoints.indices) {
+            val curr = mappedPoints[i]
+            val next = mappedPoints[(i + 1) % mappedPoints.size]
+            val dx = next.x - curr.x
+            val next.y = next.y - curr.y
+            val dist = Math.sqrt((dx * dx + next.y * next.y).toDouble()).toFloat()
+            if (dist == 0f) continue
+            val ux = dx / dist
+            val uy = next.y / dist
+            canvas.drawLine(curr.x, curr.y, curr.x + ux * cornerLen, curr.y + uy * cornerLen, cornerPaint)
+            val prev = mappedPoints[(i - 1 + mappedPoints.size) % mappedPoints.size]
+            val pdx = prev.x - curr.x
+            val pdy = prev.y - curr.y
+            val pdist = Math.sqrt((pdx * pdx + pdy * pdy).toDouble()).toFloat()
+            if (pdist > 0f) {
+                canvas.drawLine(curr.x, curr.y, curr.x + pdx / pdist * cornerLen, curr.y + pdy / pdist * cornerLen, cornerPaint)
+            }
+        }
+
+        // 中心脉冲效果
+        val cx = mappedPoints.map { it.x }.average().toFloat()
+        val cy = mappedPoints.map { it.y }.average().toFloat()
+        val elapsed = System.currentTimeMillis() % 1000
+        val progress = elapsed / 1000f
+        val pulseAlpha = (60 * (1 - progress)).toInt()
+        val pulseRadius = 8f + progress * 20f
+        val pulsePaint = Paint().apply {
+            color = Color.parseColor("#4CAF50")
+            style = Paint.Style.FILL
+            isAntiAlias = true
+            alpha = pulseAlpha
+        }
+        canvas.drawCircle(cx, cy, pulseRadius, pulsePaint)
+    }
+
+    /** 将图像坐标映射到视图坐标（考虑旋转和缩放） */
+    private fun mapPoint(imgX: Float, imgY: Float): PointF {
+        val vw = viewWidth.toFloat()
+        val vh = viewHeight.toFloat()
+        val iw = imageWidth.toFloat()
+        val ih = imageHeight.toFloat()
+
+        // 根据旋转调整坐标
+        val (rx, ry) = when (rotation) {
+            90 -> Pair(ih - imgY, imgX)
+            180 -> Pair(iw - imgX, ih - imgY)
+            270 -> Pair(imgY, iw - imgX)
+            else -> Pair(imgX, imgY)
+        }
+
+        // 计算缩放和偏移
+        val rotatedW = if (rotation == 90 || rotation == 270) ih else iw
+        val rotatedH = if (rotation == 90 || rotation == 270) iw else ih
+        val scale = maxOf(vw / rotatedW, vh / rotatedH)
+        val offsetX = (vw - rotatedW * scale) / 2f
+        val offsetY = (vh - rotatedH * scale) / 2f
+
+        return PointF(rx * scale + offsetX, ry * scale + offsetY)
+    }
+
+    private fun drawFocusAnim(canvas: Canvas, now: Long) {
+        val elapsed = now - focusStartTime
+        if (elapsed > FOCUS_ANIM_MS) return
+        val progress = elapsed.toFloat() / FOCUS_ANIM_MS
+        val alpha = (255 * (1 - progress)).toInt()
+        val radius = 20f + progress * 35f
+
+        val a = alpha.toFloat()
+        focusPaint.alpha = a.toInt()
+        canvas.drawCircle(focusX, focusY, radius, focusPaint)
 
         // 十字线
-        val crossPaint = Paint(focusPaint).apply { this.alpha = a / 2 }
-        canvas.drawLine(x - 20f, y, x - 6f, y, crossPaint)
-        canvas.drawLine(x + 6f, y, x + 20f, y, crossPaint)
-        canvas.drawLine(x, y - 20f, x, y - 6f, crossPaint)
-        canvas.drawLine(x, y + 6f, x, y + 20f, crossPaint)
-
-        // 对勾（成功指示，前500ms）
-        if (elapsed < 500) {
-            val checkPaint = Paint(focusPaint).apply {
-                color = Color.parseColor("#4CAF50")
-                this.alpha = a
-                strokeWidth = 4f
-            }
-            canvas.drawLine(x - 10f, y, x - 3f, y + 7f, checkPaint)
-            canvas.drawLine(x - 3f, y + 7f, x + 10f, y - 7f, checkPaint)
-        }
-
-        postInvalidateDelayed(PULSE_FRAME)
-    }
-
-    private fun mapToViewRect(
-        rect: android.graphics.Rect,
-        imageWidth: Int, imageHeight: Int,
-        viewWidth: Int, viewHeight: Int,
-        rotationDegrees: Int
-    ): RectF {
-        val (w, h) = when (rotationDegrees) {
-            90, 270 -> Pair(imageHeight, imageWidth)
-            else -> Pair(imageWidth, imageHeight)
-        }
-        val scaleX = viewWidth.toFloat() / w
-        val scaleY = viewHeight.toFloat() / h
-        val scale = maxOf(scaleX, scaleY)
-        val offsetX = (viewWidth - w * scale) / 2f
-        val offsetY = (viewHeight - h * scale) / 2f
-        return RectF(
-            rect.left * scale + offsetX,
-            rect.top * scale + offsetY,
-            rect.right * scale + offsetX,
-            rect.bottom * scale + offsetY
-        )
+        val crossPaint = Paint(focusPaint).apply { this.alpha = (a * 0.5f).toInt() }
+        canvas.drawLine(focusX - 16f, focusY, focusX - 5f, focusY, crossPaint)
+        canvas.drawLine(focusX + 5f, focusY, focusX + 16f, focusY, crossPaint)
+        canvas.drawLine(focusX, focusY - 16f, focusX, focusY - 5f, crossPaint)
+        canvas.drawLine(focusX, focusY + 5f, focusX, focusY + 16f, crossPaint)
     }
 }

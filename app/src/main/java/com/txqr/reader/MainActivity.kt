@@ -164,9 +164,11 @@ class MainActivity : AppCompatActivity() {
                 BarcodeScanning.getClient()
             }
 
+            // 最高分辨率，最快速度
             val imageAnalysis = ImageAnalysis.Builder()
-                .setTargetResolution(Size(1280, 720))
+                .setTargetResolution(Size(1920, 1080))
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
                 .build()
                 .also { it.setAnalyzer(cameraExecutor, createAnalyzer(scanner)) }
 
@@ -176,11 +178,14 @@ class MainActivity : AppCompatActivity() {
                 cameraProvider.unbindAll()
                 currentCamera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalysis)
 
-                if (prefs.getBoolean("auto_focus", true)) {
-                    val factory = previewView.meteringPointFactory
-                    val point = factory.createPoint(0.5f, 0.5f)
-                    val action = FocusMeteringAction.Builder(point, FocusMeteringAction.FLAG_AF or FocusMeteringAction.FLAG_AE).build()
-                    currentCamera?.cameraControl?.startFocusAndMetering(action)
+                // 持续自动对焦 + 曝光
+                currentCamera?.cameraControl?.let { ctrl ->
+                    ctrl.startFocusAndMetering(
+                        FocusMeteringAction.Builder(
+                            previewView.meteringPointFactory.createPoint(0.5f, 0.5f),
+                            FocusMeteringAction.FLAG_AF or FocusMeteringAction.FLAG_AE
+                        ).setAutoCancelDuration(Long.MAX_VALUE, java.util.concurrent.TimeUnit.MILLISECONDS).build()
+                    )
                 }
             } catch (exc: Exception) {
                 Log.e(TAG, "相机绑定失败", exc)
@@ -327,7 +332,6 @@ class MainActivity : AppCompatActivity() {
         val ext = detectExtension(data)
         val baseName = "文件${count}"
 
-        // 优先用 SAF URI 保存
         val dirUri = getSaveDirUri()
         if (dirUri != null) {
             return try {
@@ -345,8 +349,7 @@ class MainActivity : AppCompatActivity() {
                 if (finalUri != null) {
                     contentResolver.openOutputStream(finalUri)?.use { it.write(data) }
                     Toast.makeText(this, "已保存: $fileName", Toast.LENGTH_SHORT).show()
-                    // 返回一个虚拟 File 用于 openFile
-                    File(txqrDir, fileName).also { if (!it.parentFile.exists()) it.parentFile.mkdirs() }
+                    File(txqrDir, fileName).also { f -> if (!f.parentFile.exists()) f.parentFile.mkdirs() }
                 } else {
                     Toast.makeText(this, "创建文件失败", Toast.LENGTH_SHORT).show()
                     null
@@ -358,6 +361,17 @@ class MainActivity : AppCompatActivity() {
         }
 
         return saveFileFallback(data, count, ext)
+    }
+
+    private fun createFileInTree(treeUri: Uri, fileName: String, mimeType: String): Uri? {
+        return try {
+            val treeDocId = DocumentsContract.getTreeDocumentId(treeUri)
+            val docUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, treeDocId)
+            DocumentsContract.createDocument(contentResolver, docUri, mimeType, fileName)
+        } catch (e: Exception) {
+            Log.e(TAG, "创建文件失败: $fileName", e)
+            null
+        }
     }
 
     private fun saveFileFallback(data: ByteArray, count: Int, ext: String): File? {
@@ -377,17 +391,6 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
             Log.e(TAG, "文件保存失败", e)
             Toast.makeText(this, "保存失败: ${e.message}", Toast.LENGTH_SHORT).show()
-            null
-        }
-    }
-
-    private fun createFileInTree(treeUri: Uri, fileName: String, mimeType: String): Uri? {
-        return try {
-            val treeDocId = DocumentsContract.getTreeDocumentId(treeUri)
-            val docUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, treeDocId)
-            DocumentsContract.createDocument(contentResolver, docUri, mimeType, fileName)
-        } catch (e: Exception) {
-            Log.e(TAG, "创建文件失败: $fileName", e)
             null
         }
     }
@@ -430,30 +433,7 @@ class MainActivity : AppCompatActivity() {
         val dir = lastSavedFile?.parentFile ?: txqrDir
         if (!dir.exists()) dir.mkdirs()
 
-        // 策略1: 如果有 SAF URI，用 ACTION_VIEW 打开到该目录
-        val savedUri = getSaveDirUri()
-        if (savedUri != null) {
-            try {
-                val intent = Intent(Intent.ACTION_VIEW).apply {
-                    setDataAndType(savedUri, "vnd.android.document/directory")
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                }
-                startActivity(intent)
-                return
-            } catch (_: Exception) {}
-
-            // 回退: 用 ACTION_OPEN_DOCUMENT_TREE 打开到该位置
-            try {
-                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
-                    putExtra(DocumentsContract.EXTRA_INITIAL_URI, savedUri)
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                }
-                startActivity(intent)
-                return
-            } catch (_: Exception) {}
-        }
-
-        // 策略2: 小米文件管理器 + file:// URI
+        // 策略1: 小米文件管理器 + file:// URI（最可靠）
         try {
             val intent = Intent().apply {
                 setClassName("com.android.fileexplorer", "com.android.fileexplorer.FileExplorerTabActivity")
@@ -464,10 +444,18 @@ class MainActivity : AppCompatActivity() {
             return
         } catch (_: Exception) {}
 
-        // 策略3: DocumentsUI
+        // 策略2: 系统文件管理器 (API 30+)
+        try {
+            val intent = Intent.makeMainSelectorActivity(Intent.ACTION_MAIN, Intent.CATEGORY_APP_FILES)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+            return
+        } catch (_: Exception) {}
+
+        // 策略3: file:// URI + 通用 intent
         try {
             val intent = Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(Uri.fromFile(dir), "resource/folder")
+                data = Uri.fromFile(dir)
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             startActivity(intent)
