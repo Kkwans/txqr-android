@@ -1,11 +1,16 @@
 package com.txqr.reader
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
 import android.util.Size
+import android.view.View
+import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -14,11 +19,10 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import mobile.Mobile
 import java.io.File
 import java.io.FileOutputStream
-import java.text.SimpleDateFormat
-import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
@@ -30,15 +34,33 @@ class MainActivity : AppCompatActivity() {
     private lateinit var statusText: TextView
     private lateinit var frameCountText: TextView
     private lateinit var previewView: PreviewView
+    private lateinit var resultPanel: LinearLayout
+    private lateinit var btnOpenDir: Button
+    private lateinit var btnNextFile: Button
 
     private val isProcessing = AtomicBoolean(false)
     private var fileCount = 0
+    private var lastSavedFile: File? = null
+    private var lastSavedDir: File? = null
+
+    private val saveDir: String
+        get() = getSharedPreferences("txqr", MODE_PRIVATE)
+            .getString("save_dir", "") ?: ""
+
+    private val txqrDir: File
+        get() {
+            val custom = saveDir
+            return if (custom.isNotEmpty()) {
+                File(custom)
+            } else {
+                File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "TXQR")
+            }
+        }
 
     companion object {
         private const val TAG = "TxqrReader"
         private const val REQUEST_CODE_PERMISSIONS = 10
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
-        private const val SAVE_DIR = "TXQR"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,9 +70,15 @@ class MainActivity : AppCompatActivity() {
         previewView = findViewById(R.id.previewView)
         statusText = findViewById(R.id.statusText)
         frameCountText = findViewById(R.id.frameCountText)
+        resultPanel = findViewById(R.id.resultPanel)
+        btnOpenDir = findViewById(R.id.btnOpenDir)
+        btnNextFile = findViewById(R.id.btnNextFile)
 
         decoder = Mobile.newDecoder()
         cameraExecutor = Executors.newSingleThreadExecutor()
+
+        btnOpenDir.setOnClickListener { openFileManager() }
+        btnNextFile.setOnClickListener { resetForNext() }
 
         if (allPermissionsGranted()) {
             startCamera()
@@ -102,13 +130,18 @@ class MainActivity : AppCompatActivity() {
                 if (decoder.isCompleted()) {
                     val data = decoder.dataBytes()
                     fileCount++
-                    val savedPath = saveFile(data, fileCount)
-                    statusText.text = "✅ 解码完成！已保存 $savedPath"
-                    frameCountText.text = "唯一帧数: ${decoder.uniqueFrames()} | 大小: ${formatSize(data.size.toLong())}"
+                    val savedFile = saveFile(data, fileCount)
+                    lastSavedFile = savedFile
+                    lastSavedDir = savedFile?.parentFile
+
+                    statusText.text = "✅ 解码完成！"
+                    frameCountText.text = "${savedFile?.name} (${formatSize(data.size.toLong())})"
+
+                    resultPanel.visibility = View.VISIBLE
                 } else {
                     val progress = decoder.progress()
-                    statusText.text = "⏳ 解码中: $progress% (已接收 ${decoder.uniqueFrames()} 帧)"
-                    frameCountText.text = "原始大小: ${formatSize(decoder.totalSize())}"
+                    statusText.text = "⏳ $progress% (帧: ${decoder.uniqueFrames()})"
+                    frameCountText.text = "大小: ${formatSize(decoder.totalSize())}"
                 }
             }
         } catch (e: Exception) {
@@ -134,68 +167,168 @@ class MainActivity : AppCompatActivity() {
         val b = data
 
         return when {
-            // PNG
-            b[0] == 0x89.toByte() && b[1] == 0x50.toByte() && b[2] == 0x4E.toByte() && b[3] == 0x47.toByte() -> ".png"
-            // JPEG
-            b[0] == 0xFF.toByte() && b[1] == 0xD8.toByte() && b[2] == 0xFF.toByte() -> ".jpg"
-            // GIF
-            b[0] == 0x47.toByte() && b[1] == 0x49.toByte() && b[2] == 0x46.toByte() -> ".gif"
-            // PDF
-            b[0] == 0x25.toByte() && b[1] == 0x50.toByte() && b[2] == 0x44.toByte() && b[3] == 0x46.toByte() -> ".pdf"
-            // ZIP / APK / DOCX / XLSX
-            b[0] == 0x50.toByte() && b[1] == 0x4B.toByte() && b[2] == 0x03.toByte() && b[3] == 0x04.toByte() -> ".zip"
-            // RAR
-            b[0] == 0x52.toByte() && b[1] == 0x61.toByte() && b[2] == 0x72.toByte() && b[3] == 0x21.toByte() -> ".rar"
-            // 7Z
-            b[0] == 0x37.toByte() && b[1] == 0x7A.toByte() && b[2] == 0xBC.toByte() && b[3] == 0xAF.toByte() -> ".7z"
-            // GZIP (tar.gz)
-            b[0] == 0x1F.toByte() && b[1] == 0x8B.toByte() -> ".tar.gz"
-            // TAR (ustar magic)
-            data.size > 263 && b[257] == 0x75.toByte() && b[258] == 0x73.toByte() && b[259] == 0x74.toByte() && b[260] == 0x61.toByte() -> ".tar"
-            // BMP
+            // 图片
+            b[0] == 0x89.toByte() && b[1] == 0x50.toByte() -> ".png"
+            b[0] == 0xFF.toByte() && b[1] == 0xD8.toByte() -> ".jpg"
+            b[0] == 0x47.toByte() && b[1] == 0x49.toByte() -> ".gif"
             b[0] == 0x42.toByte() && b[1] == 0x4D.toByte() -> ".bmp"
-            // WEBP
-            data.size > 12 && b[8] == 0x57.toByte() && b[9] == 0x45.toByte() && b[10] == 0x42.toByte() && b[11] == 0x50.toByte() -> ".webp"
-            // MP4/MOV (ftyp box)
-            data.size > 4 && b[4] == 0x66.toByte() && b[5] == 0x74.toByte() && b[6] == 0x79.toByte() && b[7] == 0x70.toByte() -> ".mp4"
-            // ELF (Linux binary)
-            b[0] == 0x7F.toByte() && b[1] == 0x45.toByte() && b[2] == 0x4C.toByte() && b[3] == 0x46.toByte() -> ""
-            // HTML
-            data.size > 10 -> {
-                val head = String(b, 0, minOf(100, b.size)).lowercase()
-                if (head.contains("<!doctype") || head.contains("<html")) ".html" else ""
-            }
+            data.size > 12 && b[8] == 0x57.toByte() && b[9] == 0x45.toByte() -> ".webp"
+            data.size > 4 && b[4] == 0x66.toByte() && b[5] == 0x74.toByte() -> ".mp4"
+            // 文档
+            b[0] == 0x25.toByte() && b[1] == 0x50.toByte() -> ".pdf"
+            b[0] == 0xD0.toByte() && b[1] == 0xCF.toByte() -> ".doc"
+            b[0] == 0x50.toByte() && b[1] == 0x4B.toByte() -> ".zip"
+            // 压缩
+            b[0] == 0x1F.toByte() && b[1] == 0x8B.toByte() -> ".tar.gz"
+            b[0] == 0x52.toByte() && b[1] == 0x61.toByte() && b[2] == 0x72.toByte() -> ".rar"
+            b[0] == 0x37.toByte() && b[1] == 0x7A.toByte() -> ".7z"
+            data.size > 257 && b[257] == 0x75.toByte() && b[258] == 0x73.toByte() -> ".tar"
+            // 可执行
+            b[0] == 0x7F.toByte() && b[1] == 0x45.toByte() && b[2] == 0x4C.toByte() -> ".elf"
+            b[0] == 0x4D.toByte() && b[1] == 0x5A.toByte() -> ".exe"
+            // 文本检测：尝试判断是否为 UTF-8 文本
+            isLikelyText(data) -> detectTextType(data)
             else -> ""
         }
     }
 
     /**
-     * 保存文件到 /Download/TXQR/ 目录
-     * 通过魔数推断文件类型，使用正确扩展名
+     * 检测数据是否可能是文本文件
      */
-    private fun saveFile(data: ByteArray, count: Int): String {
-        val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-        val ext = detectExtension(data)
-        val fileName = "txqr_${count}_${timestamp}$ext"
-
-        val dirPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-        val txqrDir = File(dirPath, SAVE_DIR)
-
-        if (!txqrDir.exists()) {
-            txqrDir.mkdirs()
+    private fun isLikelyText(data: ByteArray): Boolean {
+        val sampleSize = minOf(512, data.size)
+        var nonTextBytes = 0
+        for (i in 0 until sampleSize) {
+            val v = data[i].toInt() and 0xFF
+            // 允许：可打印ASCII、换行、制表、以及UTF-8多字节序列
+            if (v > 127) continue // UTF-8 多字节，先跳过
+            if (v < 32 && v != 10 && v != 13 && v != 9) {
+                nonTextBytes++
+            }
         }
+        // 非文本字节占比 < 5% 认为是文本
+        return nonTextBytes * 100 / sampleSize < 5
+    }
 
-        val file = File(txqrDir, fileName)
-        try {
-            FileOutputStream(file).use { it.write(data) }
-            Toast.makeText(this, "已保存: ${file.name}", Toast.LENGTH_LONG).show()
-            Log.d(TAG, "文件已保存: ${file.absolutePath} (${data.size} 字节, 类型: $ext)")
-            return file.absolutePath
+    /**
+     * 检测文本文件的具体类型
+     */
+    private fun detectTextType(data: ByteArray): String {
+        val head = try {
+            String(data, 0, minOf(500, data.size), Charsets.UTF_8).lowercase()
         } catch (e: Exception) {
-            Log.e(TAG, "保存失败: ${e.message}")
-            Toast.makeText(this, "保存失败: ${e.message}", Toast.LENGTH_SHORT).show()
-            return "保存失败"
+            return ".txt"
         }
+
+        return when {
+            // JSON
+            head.trimStart().startsWith("{") || head.trimStart().startsWith("[") -> ".json"
+            // XML / HTML
+            head.contains("<?xml") -> ".xml"
+            head.contains("<!doctype") || head.contains("<html") -> ".html"
+            head.contains("<svg") -> ".svg"
+            // Markdown
+            head.contains("---\n") || head.contains("# ") || head.contains("## ") -> ".md"
+            // YAML
+            head.trimStart().startsWith("---") && head.contains(": ") -> ".yaml"
+            // Shell
+            head.startsWith("#!/bin/") || head.startsWith("#!/usr/bin/") -> ".sh"
+            // CSS
+            head.contains("{") && head.contains("}") && (head.contains(":") && head.contains(";")) -> ".css"
+            // JavaScript / TypeScript
+            head.contains("function ") || head.contains("const ") || head.contains("import ") -> ".js"
+            // Java / Kotlin
+            head.contains("public class ") || head.contains("fun ") || head.contains("package ") -> {
+                if (head.contains("fun ") && head.contains("val ")) ".kt" else ".java"
+            }
+            // Python
+            head.contains("def ") || head.contains("import ") || head.startsWith("# ") -> ".py"
+            // SQL
+            head.contains("select ") || head.contains("create table") || head.contains("insert into") -> ".sql"
+            // CSV
+            head.contains(",") && head.count { it == '\n' } > 0 -> ".csv"
+            // Log
+            head.contains("[INFO]") || head.contains("[ERROR]") || head.contains("[WARN]") -> ".log"
+            // Config
+            head.contains("[") && head.contains("]") && head.contains("=") -> ".ini"
+            // 默认纯文本
+            else -> ".txt"
+        }
+    }
+
+    /**
+     * 保存文件
+     */
+    private fun saveFile(data: ByteArray, count: Int): File {
+        val ext = detectExtension(data)
+        val dir = txqrDir
+        if (!dir.exists()) dir.mkdirs()
+
+        // 简洁命名：序号 + 扩展名
+        val baseName = "文件${count}"
+        var file = File(dir, "$baseName$ext")
+        // 避免覆盖
+        var n = 1
+        while (file.exists()) {
+            file = File(dir, "${baseName}_$n$ext")
+            n++
+        }
+
+        FileOutputStream(file).use { it.write(data) }
+        Toast.makeText(this, "已保存: ${file.name}", Toast.LENGTH_SHORT).show()
+        Log.d(TAG, "文件已保存: ${file.absolutePath} (${data.size} 字节)")
+        return file
+    }
+
+    /**
+     * 打开文件所在目录
+     */
+    private fun openFileManager() {
+        val dir = lastSavedDir ?: txqrDir
+        try {
+            val intent = Intent(Intent.ACTION_VIEW)
+            val uri = FileProvider.getUriForFile(this, "${packageName}.fileprovider", dir)
+            intent.setDataAndType(uri, "resource/folder")
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            startActivity(intent)
+        } catch (e: Exception) {
+            // 如果文件管理器不支持打开目录，尝试打开文件
+            try {
+                val file = lastSavedFile ?: return
+                val uri = FileProvider.getUriForFile(this, "${packageName}.fileprovider", file)
+                val intent = Intent(Intent.ACTION_VIEW)
+                intent.setDataAndType(uri, getMimeType(file))
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                startActivity(intent)
+            } catch (e2: Exception) {
+                Toast.makeText(this, "无法打开文件管理器", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun getMimeType(file: File): String {
+        val name = file.name.lowercase()
+        return when {
+            name.endsWith(".png") -> "image/png"
+            name.endsWith(".jpg") || name.endsWith(".jpeg") -> "image/jpeg"
+            name.endsWith(".gif") -> "image/gif"
+            name.endsWith(".pdf") -> "application/pdf"
+            name.endsWith(".txt") || name.endsWith(".md") || name.endsWith(".json") || name.endsWith(".xml") -> "text/plain"
+            name.endsWith(".html") -> "text/html"
+            name.endsWith(".mp4") -> "video/mp4"
+            else -> "*/*"
+        }
+    }
+
+    /**
+     * 重置解码器，准备接收下一个文件
+     */
+    private fun resetForNext() {
+        decoder.reset()
+        resultPanel.visibility = View.GONE
+        statusText.text = "将摄像头对准二维码动画"
+        frameCountText.text = ""
+        lastSavedFile = null
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {

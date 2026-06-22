@@ -1,80 +1,96 @@
-# TXQR Android Reader
-
-**安卓端 txqr 动态二维码解码器**
+# TXQR Android 接收器
 
 通过摄像头扫描 Mac 屏幕上播放的 txqr-gif 动态二维码，实时解码得到原始文件。
 
-## 工作原理
+## 功能
 
-```
-Mac 屏幕播放 GIF (txqr-gif 生成)
-        ↓ 摄像头扫描
-Android CameraX 实时采集
-        ↓ ML Kit 识别 QR 码
-TxqrDecoder (LT codes 解码)
-        ↓ Base64 解码
-保存为原始文件 (Heimdall.tar.gz)
-```
+- 📷 摄像头实时扫描动态二维码
+- 🔓 自动解码 txqr 协议（LT codes / fountain codes）
+- 📁 自动识别文件类型（30+ 格式）
+- 💾 保存到 `/Download/TXQR/` 目录
+- 📂 一键打开文件所在目录
+- 🔄 支持连续解码多个文件
 
-## 前提条件
+## 支持的文件格式
 
-- Android Studio Hedgehog (2023.1) 或更新
-- Android SDK 34
-- 安卓手机（Android 7.0+），带摄像头
+### 图片
+png, jpg, gif, bmp, webp
 
-## 编译步骤
+### 文档
+pdf, doc, docx, xls, xlsx, ppt, pptx
 
-1. **用 Android Studio 打开项目**
-   ```
-   File -> Open -> 选择 txqr-android 目录
-   ```
+### 压缩包
+zip, tar.gz, tar, rar, 7z, gz, bz2
 
-2. **等待 Gradle 同步完成**
+### 文本/代码
+txt, md, json, xml, html, css, js, ts, java, kt, py, go, rs, c, cpp, h, sql, sh, yaml, yml, toml, ini, csv, log, svg
 
-3. **连接安卓手机**（USB 调试模式）
-
-4. **点击 Run ▶️ 编译安装到手机**
+### 其他
+mp4, mp3, wav, flv, avi, mkv, exe, elf, apk
 
 ## 使用方法
 
-1. Mac 上用 txqr-gif 播放 Heimdall.gif（全屏，亮度调高）
-2. 安卓手机打开 TXQR Reader App
-3. 将摄像头对准 Mac 屏幕
-4. 保持稳定，等待解码完成
-5. 文件保存到：`/Android/data/com.txqr.reader/files/decoded_file.tar.gz`
+1. **Mac 端**：用 txqr-gif 生成动态二维码 GIF
+   ```bash
+   txqr-gif -split 2000 -fps 15 -o output.gif yourfile
+   ```
 
-## 注意事项
+2. **安卓端**：
+   - 安装 TXQR 接收器 APK
+   - 打开 App，允许摄像头权限
+   - 将摄像头对准 Mac 屏幕上播放的二维码动画
+   - 等待解码完成
+   - 点击"📂 打开目录"查看文件
+   - 点击"🔄 继续扫描"解码下一个文件
 
-- **屏幕亮度**：Mac 屏幕亮度调到最高
-- **距离**：手机距离屏幕 20-40cm
-- **稳定性**：尽量保持手机稳定，避免抖动
-- **光线**：避免强光直射屏幕，减少反光
-- **对焦**：确保摄像头对焦在二维码上
+## 文件命名
 
-## 技术细节
+解码后的文件自动命名为 `文件1.扩展名`、`文件2.扩展名`...
+扩展名通过文件头魔数自动识别，确保文件可直接使用。
 
-- **编码协议**：txqr（fountain codes / LT codes）
-- **帧格式**：`blockCode/chunkLen/total|data`
-- **QR 解码**：Google ML Kit（离线，不需要网络）
-- **解码算法**：纯 Kotlin 实现的 LT codes peeling decoder
-- **完全离线**：整个过程不需要网络连接
+## 编译
+
+```bash
+# 通过 GitHub Actions 自动编译
+git push origin master
+
+# 或本地编译（需要 Go 1.25+、Android SDK）
+cd decoder && gomobile bind -target=android -androidapi 24 -o ../app/libs/txqr.aar ./mobile
+gradle assembleDebug
+```
 
 ## 项目结构
 
 ```
 txqr-android/
-├── app/
+├── app/                          # Android App
 │   ├── build.gradle
 │   └── src/main/
 │       ├── AndroidManifest.xml
 │       ├── java/com/txqr/reader/
-│       │   ├── MainActivity.kt          # 主界面
-│       │   ├── QRCodeAnalyzer.kt        # QR 码识别
-│       │   └── decoder/
-│       │       └── TxqrDecoder.kt       # LT codes 解码器
-│       └── res/layout/
-│           └── activity_main.xml        # 布局
+│       │   ├── MainActivity.kt      # 主界面
+│       │   └── QRCodeAnalyzer.kt    # QR 码识别
+│       └── res/
+│           ├── layout/activity_main.xml
+│           └── xml/file_paths.xml
+├── decoder/                      # Go txqr 解码器
+│   ├── go.mod
+│   └── mobile/
+│       └── mobile.go                # gomobile 绑定
+├── .github/workflows/build.yml  # GitHub Actions
 ├── build.gradle
 ├── settings.gradle
+├── gradle.properties
 └── README.md
 ```
+
+## 技术栈
+
+- **解码器**：Go + google/gofountain（gomobile 编译为 Android AAR）
+- **QR 识别**：Google ML Kit Barcode Scanning（离线）
+- **相机**：CameraX
+- **UI**：Kotlin + AndroidX
+
+## 下载
+
+https://github.com/Kkwans/txqr-android/releases
