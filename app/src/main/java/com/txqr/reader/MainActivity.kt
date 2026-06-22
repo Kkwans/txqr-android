@@ -263,9 +263,9 @@ class MainActivity : AppCompatActivity() {
         if (!isProcessing.compareAndSet(false, true)) return
 
         try {
-            val prevUnique = decoder.uniqueFrames()
+            val prevUnique = decoder.uniqueFrames().toInt()
             decoder.decodeChunk(content)
-            val currUnique = decoder.uniqueFrames()
+            val currUnique = decoder.uniqueFrames().toInt()
 
             // 诊断追踪
             if (currUnique > prevUnique) {
@@ -301,8 +301,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateProgressDisplay() {
         val progress = decoder.progress()
-        val unique = decoder.uniqueFrames()
-        val total = decoder.totalSize()
+        val unique = decoder.uniqueFrames().toInt()
+        val total = decoder.totalSize().toInt()
 
         progressCard.visibility = View.VISIBLE
         progressBar.progress = progress
