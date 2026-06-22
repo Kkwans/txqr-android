@@ -278,7 +278,6 @@
                         android:text="GitHub: Kkwans/txqr-android"
                         android:textColor="#1976D2"
                         android:textSize="12sp"
-                        android:textDecorationLine="underline"
                         android:layout_marginTop="4dp"
                         android:clickable="true"
                         android:focusable="true" />
