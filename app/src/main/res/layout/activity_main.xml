@@ -3,8 +3,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- 相机预览层 -->
     <androidx.camera.view.PreviewView
         android:id="@+id/previewView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- 识别框叠加层 -->
+    <com.txqr.reader.OverlayView
+        android:id="@+id/overlayView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
@@ -74,21 +81,44 @@
             android:gravity="center">
 
             <Button
+                android:id="@+id/btnOpenFile"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="📄 打开文件"
+                android:layout_marginEnd="4dp"
+                style="?android:attr/buttonBarButtonStyle" />
+
+            <Button
                 android:id="@+id/btnOpenDir"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="📂 打开目录"
-                android:layout_marginEnd="8dp" />
+                android:layout_marginEnd="4dp"
+                style="?android:attr/buttonBarButtonStyle" />
 
             <Button
                 android:id="@+id/btnNextFile"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="🔄 继续扫描"
-                android:layout_marginStart="8dp" />
+                android:text="🔄 下一个"
+                android:layout_marginStart="4dp"
+                style="?android:attr/buttonBarButtonStyle" />
         </LinearLayout>
     </LinearLayout>
+
+    <!-- 设置按钮（右上角） -->
+    <ImageButton
+        android:id="@+id/btnSettings"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="top|end"
+        android:layout_margin="16dp"
+        android:src="@android:drawable/ic_menu_manage"
+        android:background="@android:color/transparent"
+        android:contentDescription="设置"
+        android:tint="#FFFFFF" />
 
 </FrameLayout>
