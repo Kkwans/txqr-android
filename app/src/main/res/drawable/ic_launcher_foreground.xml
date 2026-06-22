@@ -4,59 +4,104 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- 深色渐变背景圆 -->
+
+    <!-- 背景圆形 -->
     <path
-        android:fillColor="#16213E"
-        android:pathData="M54,54m-50,0a50,50 0,1 1,100 0a50,50 0,1 1,-100 0" />
-    <!-- 外环 -->
+        android:fillColor="#1565C0"
+        android:pathData="M54,54m-42,0a42,42 0,1 1,84 0a42,42 0,1 1,-84 0" />
+
+    <!-- QR 码左上角标记 -->
     <path
-        android:fillColor="#0F3460"
-        android:fillAlpha="0.3"
-        android:pathData="M54,54m-48,0a48,48 0,1 1,96 0a48,48 0,1 1,-96 0" />
-    <!-- QR码左上角定位图案 -->
+        android:fillColor="#FFFFFF"
+        android:pathData="M28,28h16v16h-16z" />
+    <path
+        android:fillColor="#1565C0"
+        android:pathData="M32,32h8v8h-8z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M34,34h4v4h-4z" />
+
+    <!-- QR 码右上角标记 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M64,28h16v16h-16z" />
+    <path
+        android:fillColor="#1565C0"
+        android:pathData="M68,32h8v8h-8z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M70,34h4v4h-4z" />
+
+    <!-- QR 码左下角标记 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M28,64h16v16h-16z" />
+    <path
+        android:fillColor="#1565C0"
+        android:pathData="M32,68h8v8h-8z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M34,70h4v4h-4z" />
+
+    <!-- QR 码数据点（装饰） -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M48,28h4v4h-4z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M56,28h4v4h-4z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M48,36h4v4h-4z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M56,44h4v4h-4z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M48,48h4v4h-4z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M56,48h4v4h-4z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M64,48h4v4h-4z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M72,48h4v4h-4z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M48,56h4v4h-4z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M64,56h4v4h-4z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M72,64h4v4h-4z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M48,64h4v4h-4z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M56,64h4v4h-4z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M64,72h4v4h-4z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M72,72h4v4h-4z" />
+
+    <!-- 下载箭头 -->
     <path
         android:fillColor="#4CAF50"
-        android:pathData="M24,24h18v18h-18z" />
-    <path
-        android:fillColor="#16213E"
-        android:pathData="M27,27h12v12h-12z" />
+        android:pathData="M50,52l4,4l4,-4z" />
     <path
         android:fillColor="#4CAF50"
-        android:pathData="M30,30h6v6h-6z" />
-    <!-- QR码右上角定位图案 -->
+        android:pathData="M54,42v14"
+        android:strokeWidth="3"
+        android:strokeColor="#4CAF50" />
     <path
         android:fillColor="#4CAF50"
-        android:pathData="M66,24h18v18h-18z" />
-    <path
-        android:fillColor="#16213E"
-        android:pathData="M69,27h12v12h-12z" />
-    <path
-        android:fillColor="#4CAF50"
-        android:pathData="M72,30h6v6h-6z" />
-    <!-- QR码左下角定位图案 -->
-    <path
-        android:fillColor="#4CAF50"
-        android:pathData="M24,66h18v18h-18z" />
-    <path
-        android:fillColor="#16213E"
-        android:pathData="M27,69h12v12h-12z" />
-    <path
-        android:fillColor="#4CAF50"
-        android:pathData="M30,72h6v6h-6z" />
-    <!-- QR码数据点 -->
-    <path
-        android:fillColor="#66BB6A"
-        android:pathData="M50,30h3v3h-3zM56,30h3v3h-3zM62,30h3v3h-3zM47,36h3v3h-3zM53,36h3v3h-3zM62,36h3v3h-3zM50,42h3v3h-3zM56,42h3v3h-3zM59,42h3v3h-3zM44,48h3v3h-3zM50,48h3v3h-3zM56,48h3v3h-3zM65,48h3v3h-3zM44,54h3v3h-3zM53,54h3v3h-3zM59,54h3v3h-3zM65,54h3v3h-3zM47,60h3v3h-3zM56,60h3v3h-3zM62,60h3v3h-3zM50,66h3v3h-3zM53,66h3v3h-3zM59,66h3v3h-3z" />
-    <!-- 下载箭头 - 从QR码指向下方 -->
-    <path
-        android:fillColor="#2196F3"
-        android:pathData="M48,84h12v-10h-4v-8h-4v8h-4z" />
-    <path
-        android:fillColor="#2196F3"
-        android:pathData="M54,90l-8,-6h16z" />
-    <!-- 星星装饰 -->
-    <path
-        android:fillColor="#FFD700"
-        android:fillAlpha="0.6"
-        android:pathData="M86,22l2,-6l2,6h6l-5,3l2,6l-5,-4l-5,4l2,-6l-5,-3z" />
+        android:pathData="M46,62h16"
+        android:strokeWidth="3"
+        android:strokeColor="#4CAF50" />
 </vector>

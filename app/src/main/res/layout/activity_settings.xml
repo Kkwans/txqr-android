@@ -3,16 +3,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#0A1628">
+    android:background="#F5F5F5">
 
     <!-- 标题栏 -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="52dp"
         android:gravity="center_vertical"
-        android:background="#16213E"
+        android:background="#FFFFFF"
         android:paddingHorizontal="12dp"
-        android:elevation="4dp">
+        android:elevation="2dp">
 
         <ImageButton
             android:id="@+id/btnBack"
@@ -21,7 +21,7 @@
             android:src="@android:drawable/ic_menu_revert"
             android:background="@android:color/transparent"
             android:contentDescription="返回"
-            android:tint="#FFFFFF"
+            android:tint="#212121"
             android:scaleType="center"
             android:padding="8dp" />
 
@@ -32,7 +32,7 @@
             android:text="设置"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="#FFFFFF"
+            android:textColor="#212121"
             android:layout_marginStart="8dp" />
     </LinearLayout>
 
@@ -52,15 +52,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:background="#1A233A"
+                android:background="#FFFFFF"
                 android:padding="16dp"
-                android:layout_marginBottom="12dp">
+                android:layout_marginBottom="12dp"
+                android:elevation="1dp">
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="文件保存"
-                    android:textColor="#4CAF50"
+                    android:textColor="#1976D2"
                     android:textSize="13sp"
                     android:textStyle="bold"
                     android:layout_marginBottom="12dp" />
@@ -73,7 +74,7 @@
                     android:gravity="center_vertical"
                     android:clickable="true"
                     android:focusable="true"
-                    android:background="#0D1B2A"
+                    android:background="#F5F5F5"
                     android:padding="14dp">
 
                     <TextView
@@ -81,7 +82,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="保存目录"
-                        android:textColor="#CCFFFFFF"
+                        android:textColor="#212121"
                         android:textSize="15sp" />
 
                     <TextView
@@ -89,7 +90,7 @@
                         android:layout_height="wrap_content"
                         android:id="@+id/tvSaveDir"
                         android:text="/Download/TXQR"
-                        android:textColor="#80FFFFFF"
+                        android:textColor="#9E9E9E"
                         android:textSize="13sp"
                         android:maxWidth="200dp"
                         android:maxLines="1"
@@ -99,7 +100,7 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:text="›"
-                        android:textColor="#80FFFFFF"
+                        android:textColor="#BDBDBD"
                         android:textSize="20sp"
                         android:gravity="center" />
                 </LinearLayout>
@@ -111,8 +112,8 @@
                     android:text="📂 查看保存目录"
                     android:textSize="14sp"
                     android:layout_marginTop="10dp"
-                    android:backgroundTint="#0D47A1"
-                    android:textColor="#FFFFFF" />
+                    android:backgroundTint="#E3F2FD"
+                    android:textColor="#1976D2" />
             </LinearLayout>
 
             <!-- 卡片：扫描设置 -->
@@ -120,15 +121,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:background="#1A233A"
+                android:background="#FFFFFF"
                 android:padding="16dp"
-                android:layout_marginBottom="12dp">
+                android:layout_marginBottom="12dp"
+                android:elevation="1dp">
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="扫描设置"
-                    android:textColor="#4CAF50"
+                    android:textColor="#1976D2"
                     android:textSize="13sp"
                     android:textStyle="bold"
                     android:layout_marginBottom="12dp" />
@@ -138,7 +140,6 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:background="#0D1B2A"
                     android:padding="14dp">
 
                     <TextView
@@ -146,7 +147,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="仅扫描 QR 码"
-                        android:textColor="#CCFFFFFF"
+                        android:textColor="#212121"
                         android:textSize="15sp" />
 
                     <Switch
@@ -154,22 +155,20 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="true"
-                        android:thumbTint="#4CAF50"
-                        android:trackTint="#334CAF50" />
+                        android:thumbTint="#1976D2"
+                        android:trackTint="#331976D2" />
                 </LinearLayout>
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="#333344"
-                    android:layout_marginVertical="0dp" />
+                    android:background="#EEEEEE" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:background="#0D1B2A"
                     android:padding="14dp">
 
                     <TextView
@@ -177,7 +176,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="识别框动画"
-                        android:textColor="#CCFFFFFF"
+                        android:textColor="#212121"
                         android:textSize="15sp" />
 
                     <Switch
@@ -185,21 +184,20 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="true"
-                        android:thumbTint="#4CAF50"
-                        android:trackTint="#334CAF50" />
+                        android:thumbTint="#1976D2"
+                        android:trackTint="#331976D2" />
                 </LinearLayout>
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="#333344" />
+                    android:background="#EEEEEE" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:background="#0D1B2A"
                     android:padding="14dp">
 
                     <TextView
@@ -207,7 +205,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="自动对焦"
-                        android:textColor="#CCFFFFFF"
+                        android:textColor="#212121"
                         android:textSize="15sp" />
 
                     <Switch
@@ -215,8 +213,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="true"
-                        android:thumbTint="#4CAF50"
-                        android:trackTint="#334CAF50" />
+                        android:thumbTint="#1976D2"
+                        android:trackTint="#331976D2" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -225,15 +223,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:background="#1A233A"
+                android:background="#FFFFFF"
                 android:padding="16dp"
-                android:layout_marginBottom="12dp">
+                android:layout_marginBottom="12dp"
+                android:elevation="1dp">
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="关于"
-                    android:textColor="#4CAF50"
+                    android:textColor="#1976D2"
                     android:textSize="13sp"
                     android:textStyle="bold"
                     android:layout_marginBottom="12dp" />
@@ -249,15 +248,15 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="TXQR 接收器"
-                        android:textColor="#FFFFFF"
+                        android:textColor="#212121"
                         android:textSize="18sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="v2.0.0 · 离线二维码文件传输"
-                        android:textColor="#80FFFFFF"
+                        android:text="v2.2.0 · 离线二维码文件传输"
+                        android:textColor="#9E9E9E"
                         android:textSize="12sp"
                         android:layout_marginTop="4dp" />
                 </LinearLayout>

@@ -5,10 +5,9 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.Environment
-import android.provider.Settings
+import android.provider.DocumentsContract
 import android.util.Log
 import android.util.Size
 import android.view.GestureDetector
@@ -71,6 +70,11 @@ class MainActivity : AppCompatActivity() {
                 File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "TXQR")
             }
         }
+
+    private fun getSaveDirUri(): Uri? {
+        val uriStr = prefs.getString("save_dir_uri", "") ?: ""
+        return if (uriStr.isNotEmpty()) Uri.parse(uriStr) else null
+    }
 
     companion object {
         private const val TAG = "TxqrReader"
@@ -206,7 +210,6 @@ class MainActivity : AppCompatActivity() {
                             }
                         }
 
-                        // 处理解码内容
                         if (!isProcessing.get() && !decoder.isCompleted()) {
                             for (barcode in barcodes) {
                                 val content = barcode.rawValue ?: continue
@@ -319,22 +322,95 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun saveFile(data: ByteArray, count: Int): File {
+    // ========== 保存文件 ==========
+    private fun saveFile(data: ByteArray, count: Int): File? {
         val ext = detectExtension(data)
+        val baseName = "文件${count}"
+
+        // 优先用 SAF URI 保存
+        val dirUri = getSaveDirUri()
+        if (dirUri != null) {
+            return try {
+                val mimeType = getMimeTypeByName(baseName + ext)
+                var fileName = "$baseName$ext"
+                var finalUri = createFileInTree(dirUri, fileName, mimeType)
+                if (finalUri == null) {
+                    var n = 1
+                    while (finalUri == null && n < 100) {
+                        fileName = "${baseName}_$n$ext"
+                        finalUri = createFileInTree(dirUri, fileName, mimeType)
+                        n++
+                    }
+                }
+                if (finalUri != null) {
+                    contentResolver.openOutputStream(finalUri)?.use { it.write(data) }
+                    Toast.makeText(this, "已保存: $fileName", Toast.LENGTH_SHORT).show()
+                    // 返回一个虚拟 File 用于 openFile
+                    File(txqrDir, fileName).also { if (!parentFile.exists()) parentFile.mkdirs() }
+                } else {
+                    Toast.makeText(this, "创建文件失败", Toast.LENGTH_SHORT).show()
+                    null
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "SAF 保存失败", e)
+                saveFileFallback(data, count, ext)
+            }
+        }
+
+        return saveFileFallback(data, count, ext)
+    }
+
+    private fun saveFileFallback(data: ByteArray, count: Int, ext: String): File? {
+        val baseName = "文件${count}"
         val dir = txqrDir
         if (!dir.exists()) dir.mkdirs()
-        val baseName = "文件${count}"
         var file = File(dir, "$baseName$ext")
         var n = 1
         while (file.exists()) {
             file = File(dir, "${baseName}_$n$ext")
             n++
         }
-        FileOutputStream(file).use { it.write(data) }
-        Toast.makeText(this, "已保存: ${file.name}", Toast.LENGTH_SHORT).show()
-        return file
+        return try {
+            FileOutputStream(file).use { it.write(data) }
+            Toast.makeText(this, "已保存: ${file.name}", Toast.LENGTH_SHORT).show()
+            file
+        } catch (e: Exception) {
+            Log.e(TAG, "文件保存失败", e)
+            Toast.makeText(this, "保存失败: ${e.message}", Toast.LENGTH_SHORT).show()
+            null
+        }
     }
 
+    private fun createFileInTree(treeUri: Uri, fileName: String, mimeType: String): Uri? {
+        return try {
+            val treeDocId = DocumentsContract.getTreeDocumentId(treeUri)
+            val docUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, treeDocId)
+            DocumentsContract.createDocument(contentResolver, docUri, mimeType, fileName)
+        } catch (e: Exception) {
+            Log.e(TAG, "创建文件失败: $fileName", e)
+            null
+        }
+    }
+
+    private fun getMimeTypeByName(fileName: String): String {
+        val name = fileName.lowercase()
+        return when {
+            name.endsWith(".png") -> "image/png"
+            name.endsWith(".jpg") || name.endsWith(".jpeg") -> "image/jpeg"
+            name.endsWith(".gif") -> "image/gif"
+            name.endsWith(".pdf") -> "application/pdf"
+            name.endsWith(".txt") -> "text/plain"
+            name.endsWith(".md") -> "text/markdown"
+            name.endsWith(".json") -> "application/json"
+            name.endsWith(".html") -> "text/html"
+            name.endsWith(".mp4") -> "video/mp4"
+            name.endsWith(".zip") -> "application/zip"
+            name.endsWith(".tar.gz") -> "application/gzip"
+            else -> "application/octet-stream"
+        }
+    }
+
+    // ========== 打开文件 ==========
     private fun openFile() {
         val file = lastSavedFile ?: return
         try {
@@ -349,67 +425,64 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // ========== 打开目录 ==========
     private fun openDir() {
         val dir = lastSavedFile?.parentFile ?: txqrDir
         if (!dir.exists()) dir.mkdirs()
 
-        try {
-            // 策略1: API 30+ 系统文件管理器（兼容 HyperOS/安卓16）
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                val intent = Intent.makeMainSelectorActivity(Intent.ACTION_MAIN, Intent.CATEGORY_APP_FILES)
+        // 策略1: 如果有 SAF URI，用 ACTION_VIEW 打开到该目录
+        val savedUri = getSaveDirUri()
+        if (savedUri != null) {
+            try {
+                val intent = Intent(Intent.ACTION_VIEW).apply {
+                    setDataAndType(savedUri, "vnd.android.document/directory")
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
                 startActivity(intent)
                 return
-            }
-        } catch (e: Exception) {
-            Log.w(TAG, "系统文件管理器失败", e)
+            } catch (_: Exception) {}
+
+            // 回退: 用 ACTION_OPEN_DOCUMENT_TREE 打开到该位置
+            try {
+                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
+                    putExtra(DocumentsContract.EXTRA_INITIAL_URI, savedUri)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                startActivity(intent)
+                return
+            } catch (_: Exception) {}
         }
 
+        // 策略2: 小米文件管理器 + file:// URI
         try {
-            // 策略2: 尝试用 DocumentsUI 打开指定目录
-            val treeUri = FileProvider.getUriForFile(this, "${packageName}.fileprovider", dir)
-            val intent = Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(treeUri, "vnd.android.document/directory")
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            val intent = Intent().apply {
+                setClassName("com.android.fileexplorer", "com.android.fileexplorer.FileExplorerTabActivity")
+                data = Uri.fromFile(dir)
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             startActivity(intent)
             return
-        } catch (e: Exception) {
-            Log.w(TAG, "DocumentsUI 失败", e)
-        }
+        } catch (_: Exception) {}
 
+        // 策略3: DocumentsUI
         try {
-            // 策略3: 用 file:// URI 打开（部分设备仍支持）
             val intent = Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(Uri.fromFile(dir), "*/*")
+                setDataAndType(Uri.fromFile(dir), "resource/folder")
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             startActivity(intent)
             return
-        } catch (e: Exception) {
-            Log.w(TAG, "file:// 失败", e)
-        }
+        } catch (_: Exception) {}
 
-        try {
-            // 策略4: 尝试打开小米文件管理器特定包名
-            val intent = packageManager.getLaunchIntentForPackage("com.android.fileexplorer")
-            if (intent != null) {
-                startActivity(intent)
-                return
-            }
-        } catch (e: Exception) {
-            Log.w(TAG, "小米文件管理器失败", e)
-        }
-
-        // 最终策略: 打开系统文档选择器（用户可导航到目录）
+        // 策略4: 系统文档选择器
         try {
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             startActivity(intent)
-            Toast.makeText(this, "请在文件管理器中找到: Download/TXQR", Toast.LENGTH_LONG).show()
-        } catch (e: Exception) {
-            Toast.makeText(this, "无法打开文件管理器, 请在 Download/TXQR 目录查看", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "请找到目录: ${dir.absolutePath}", Toast.LENGTH_LONG).show()
+        } catch (_: Exception) {
+            Toast.makeText(this, "无法打开目录，请在文件管理器查看: ${dir.absolutePath}", Toast.LENGTH_LONG).show()
         }
     }
 
