@@ -160,13 +160,14 @@ class OverlayView @JvmOverloads constructor(
     }
 
     private fun drawScanArea(canvas: Canvas) {
-        val cw = width.toFloat() / 2
-        val ch = height.toFloat() / 2
-        val size = minOf(width, height) * 0.7f
-        val left = cw - size / 2
-        val top = ch - size / 2
+        val cw = width.toFloat() / 2f
+        val ch = height.toFloat() / 2f
+        val size = minOf(width, height).toFloat() * 0.7f
+        val l = cw - size / 2f
+        val t = ch - size / 2f
+        val r = l + size
+        val b = t + size
 
-        // 扫描框虚线边框
         val scanPaint = Paint().apply {
             color = Color.WHITE
             style = Paint.Style.STROKE
@@ -174,9 +175,8 @@ class OverlayView @JvmOverloads constructor(
             alpha = 50
             isAntiAlias = true
         }
-        canvas.drawRect(left, top, left + size, top + size, scanPaint)
+        canvas.drawRect(l, t, r, b, scanPaint)
 
-        // 四角短标（扫描框参考线）
         val cornerLen = 30f
         val cornerScanPaint = Paint().apply {
             color = Color.parseColor("#4CAF50")
@@ -187,17 +187,17 @@ class OverlayView @JvmOverloads constructor(
             strokeCap = Paint.Cap.ROUND
         }
 
-        canvas.drawLine(left, top + cornerLen, left, top, cornerScanPaint)
-        canvas.drawLine(left, top, left + cornerLen, top, cornerScanPaint)
+        canvas.drawLine(l, t + cornerLen, l, t, cornerScanPaint)
+        canvas.drawLine(l, t, l + cornerLen, t, cornerScanPaint)
 
-        canvas.drawLine(right - cornerLen, top, right, top, cornerScanPaint)
-        canvas.drawLine(right, top, right, top + cornerLen, cornerScanPaint)
+        canvas.drawLine(r - cornerLen, t, r, t, cornerScanPaint)
+        canvas.drawLine(r, t, r, t + cornerLen, cornerScanPaint)
 
-        canvas.drawLine(right, bottom - cornerLen, right, bottom, cornerScanPaint)
-        canvas.drawLine(right, bottom, right - cornerLen, bottom, cornerScanPaint)
+        canvas.drawLine(r, b - cornerLen, r, b, cornerScanPaint)
+        canvas.drawLine(r, b, r - cornerLen, b, cornerScanPaint)
 
-        canvas.drawLine(left, bottom - cornerLen, left, bottom, cornerScanPaint)
-        canvas.drawLine(left, bottom, left + cornerLen, bottom, cornerScanPaint)
+        canvas.drawLine(l, b - cornerLen, l, b, cornerScanPaint)
+        canvas.drawLine(l, b, l + cornerLen, b, cornerScanPaint)
     }
 
     private fun drawCorners(canvas: Canvas, rect: RectF) {
@@ -279,11 +279,11 @@ class OverlayView @JvmOverloads constructor(
         canvas.drawCircle(x, y, radius, focusPaint)
 
         // 十字线
-        focusPaint.alpha = alpha / 2
-        canvas.drawLine(x - 20f, y, x - 6f, y, focusPaint)
-        canvas.drawLine(x + 6f, y, x + 20f, y, focusPaint)
-        canvas.drawLine(x, y - 20f, x, y - 6f, focusPaint)
-        canvas.drawLine(x, y + 6f, x, y + 20f, focusPaint)
+        val crossPaint = Paint(focusPaint).apply { alpha = alpha / 2 }
+        canvas.drawLine(x - 20f, y, x - 6f, y, crossPaint)
+        canvas.drawLine(x + 6f, y, x + 20f, y, crossPaint)
+        canvas.drawLine(x, y - 20f, x, y - 6f, crossPaint)
+        canvas.drawLine(x, y + 6f, x, y + 20f, crossPaint)
 
         // 对勾（成功指示，前500ms）
         if (elapsed < 500) {
