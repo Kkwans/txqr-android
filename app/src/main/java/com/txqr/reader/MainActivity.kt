@@ -172,7 +172,6 @@ class MainActivity : AppCompatActivity() {
                 cameraProvider.unbindAll()
                 currentCamera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalysis)
 
-                // 自动对焦
                 if (prefs.getBoolean("auto_focus", true)) {
                     val factory = previewView.meteringPointFactory
                     val point = factory.createPoint(0.5f, 0.5f)
@@ -208,6 +207,8 @@ class MainActivity : AppCompatActivity() {
                                     imageProxy.imageInfo.rotationDegrees
                                 )
                             }
+                        } else if (barcodes.isEmpty()) {
+                            runOnUiThread { overlayView.clear() }
                         }
 
                         for (barcode in barcodes) {
@@ -219,9 +220,6 @@ class MainActivity : AppCompatActivity() {
                     }
                     .addOnFailureListener { }
                     .addOnCompleteListener {
-                        if (!isProcessing.get()) {
-                            runOnUiThread { overlayView.clear() }
-                        }
                         imageProxy.close()
                     }
             } else {
@@ -360,14 +358,38 @@ class MainActivity : AppCompatActivity() {
     private fun openDir() {
         val dir = lastSavedDir ?: txqrDir
         if (!dir.exists()) dir.mkdirs()
+
+        // 尝试用文件管理器打开目录
         try {
+            // 方法1: 直接打开目录
             val intent = Intent(Intent.ACTION_VIEW)
-            val uri = FileProvider.getUriForFile(this, "${packageName}.fileprovider", dir)
-            intent.setDataAndType(uri, "resource/folder")
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            intent.setDataAndType(Uri.fromFile(dir), "resource/folder")
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(intent)
-        } catch (e: Exception) {
-            Toast.makeText(this, "无法打开目录: ${e.message}", Toast.LENGTH_SHORT).show()
+        } catch (e1: Exception) {
+            try {
+                // 方法2: 用 DocumentsUI 打开
+                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                startActivity(intent)
+            } catch (e2: Exception) {
+                try {
+                    // 方法3: 打开目录下的一个文件
+                    val files = dir.listFiles()
+                    if (files != null && files.isNotEmpty()) {
+                        val file = files[0]
+                        val uri = FileProvider.getUriForFile(this, "${packageName}.fileprovider", file)
+                        val intent = Intent(Intent.ACTION_VIEW)
+                        intent.setDataAndType(uri, getMimeType(file))
+                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        startActivity(intent)
+                    } else {
+                        Toast.makeText(this, "目录为空: ${dir.absolutePath}", Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e3: Exception) {
+                    Toast.makeText(this, "无法打开目录: ${e3.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 
