@@ -92,10 +92,10 @@
             android:gravity="center_vertical"
             android:layout_marginBottom="10dp">
 
-            <View
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:background="@drawable/dot_indicator" />
+            <com.txqr.reader.BreathingDotView
+                android:id="@+id/dotIndicator"
+                android:layout_width="20dp"
+                android:layout_height="20dp" />
 
             <TextView
                 android:id="@+id/progressTitle"

@@ -61,7 +61,7 @@
                     android:layout_height="wrap_content"
                     android:text="文件保存"
                     android:textColor="#1976D2"
-                    android:textSize="12sp"
+                    android:textSize="9sp"
                     android:textStyle="bold"
                     android:letterSpacing="0.08"
                     android:layout_marginBottom="12dp" />
@@ -100,7 +100,7 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:text="›"
-                        android:textColor="#BDBDBD"
+                        android:textColor="#CCCCCC"
                         android:textSize="20sp"
                         android:gravity="center" />
                 </LinearLayout>
@@ -131,7 +131,7 @@
                     android:layout_height="wrap_content"
                     android:text="扫描设置"
                     android:textColor="#1976D2"
-                    android:textSize="12sp"
+                    android:textSize="9sp"
                     android:textStyle="bold"
                     android:letterSpacing="0.08"
                     android:layout_marginBottom="4dp" />
@@ -164,9 +164,9 @@
                             android:id="@+id/btnHelpQrOnly"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text=" (?)"
-                            android:textColor="#BDBDBD"
-                            android:textSize="12sp"
+                            android:text="ⁱ"
+                            android:textColor="#CCCCCC"
+                            android:textSize="9sp"
                             android:layout_marginStart="2dp" />
                     </LinearLayout>
 
@@ -207,9 +207,9 @@
                             android:id="@+id/btnHelpAutoFocus"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text=" (?)"
-                            android:textColor="#BDBDBD"
-                            android:textSize="12sp"
+                            android:text="ⁱ"
+                            android:textColor="#CCCCCC"
+                            android:textSize="9sp"
                             android:layout_marginStart="2dp" />
                     </LinearLayout>
 
@@ -250,9 +250,9 @@
                             android:id="@+id/btnHelpOverlay"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text=" (?)"
-                            android:textColor="#BDBDBD"
-                            android:textSize="12sp"
+                            android:text="ⁱ"
+                            android:textColor="#CCCCCC"
+                            android:textSize="9sp"
                             android:layout_marginStart="2dp" />
                     </LinearLayout>
 
@@ -279,7 +279,7 @@
                     android:layout_height="wrap_content"
                     android:text="性能设置"
                     android:textColor="#1976D2"
-                    android:textSize="12sp"
+                    android:textSize="9sp"
                     android:textStyle="bold"
                     android:letterSpacing="0.08"
                     android:layout_marginBottom="4dp" />
@@ -315,20 +315,21 @@
                             android:id="@+id/btnHelpResolution"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text=" (?)"
-                            android:textColor="#BDBDBD"
-                            android:textSize="12sp"
+                            android:text="ⁱ"
+                            android:textColor="#CCCCCC"
+                            android:textSize="9sp"
                             android:layout_marginStart="2dp" />
                     </LinearLayout>
 
                     <Spinner
                         android:id="@+id/spinnerResolution"
                         android:layout_width="wrap_content"
-                        android:layout_height="40dp"
+                        android:layout_height="36dp"
                         android:layout_marginStart="8dp"
                         android:background="@drawable/bg_spinner"
-                        android:popupBackground="#FFFFFF"
-                        android:dropDownWidth="wrap_content" />
+                        android:popupBackground="@drawable/bg_spinner_dropdown"
+                        android:dropDownWidth="wrap_content"
+                        android:dropDownVerticalOffset="4dp" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -347,7 +348,7 @@
                     android:layout_height="wrap_content"
                     android:text="进度卡片"
                     android:textColor="#1976D2"
-                    android:textSize="12sp"
+                    android:textSize="9sp"
                     android:textStyle="bold"
                     android:letterSpacing="0.08"
                     android:layout_marginBottom="4dp" />
@@ -380,9 +381,9 @@
                             android:id="@+id/btnHelpAlwaysShow"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text=" (?)"
-                            android:textColor="#BDBDBD"
-                            android:textSize="12sp"
+                            android:text="ⁱ"
+                            android:textColor="#CCCCCC"
+                            android:textSize="9sp"
                             android:layout_marginStart="2dp" />
                     </LinearLayout>
 
@@ -423,9 +424,9 @@
                             android:id="@+id/btnHelpProgress"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text=" (?)"
-                            android:textColor="#BDBDBD"
-                            android:textSize="12sp"
+                            android:text="ⁱ"
+                            android:textColor="#CCCCCC"
+                            android:textSize="9sp"
                             android:layout_marginStart="2dp" />
                     </LinearLayout>
 
@@ -461,7 +462,7 @@
                     android:layout_height="wrap_content"
                     android:text="v3.14.0 · 离线二维码文件传输"
                     android:textColor="#9E9E9E"
-                    android:textSize="12sp"
+                    android:textSize="9sp"
                     android:layout_marginTop="4dp" />
 
                 <View
@@ -476,7 +477,7 @@
                     android:layout_height="wrap_content"
                     android:text="作者: Kkwans"
                     android:textColor="#757575"
-                    android:textSize="12sp" />
+                    android:textSize="9sp" />
 
                 <TextView
                     android:id="@+id/tvGithub"
@@ -484,7 +485,7 @@
                     android:layout_height="wrap_content"
                     android:text="GitHub: Kkwans/txqr-android"
                     android:textColor="#1976D2"
-                    android:textSize="12sp"
+                    android:textSize="9sp"
                     android:layout_marginTop="4dp"
                     android:clickable="true"
                     android:focusable="true" />

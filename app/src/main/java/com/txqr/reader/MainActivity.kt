@@ -15,9 +15,8 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
-import android.graphics.drawable.AnimationDrawable
-import android.animation.ValueAnimator
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.ProgressBar
@@ -68,7 +67,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnRestart: Button
     private lateinit var btnStop: Button
     private lateinit var btnSettings: ImageButton
-    private lateinit var dotIndicator: View
+    private lateinit var dotIndicator: BreathingDotView
 
     private val isProcessing = AtomicBoolean(false)
     private var fileCount = 0
@@ -86,7 +85,6 @@ class MainActivity : AppCompatActivity() {
     private var currentCamera: Camera? = null
     private lateinit var scaleDetector: ScaleGestureDetector
     private lateinit var gestureDetector: GestureDetector
-    private var breathingAnimator: ValueAnimator? = null
 
     private val prefs by lazy { getSharedPreferences("txqr", MODE_PRIVATE) }
 
@@ -140,7 +138,7 @@ class MainActivity : AppCompatActivity() {
         btnStop = findViewById(R.id.btnStop)
         btnSettings = findViewById(R.id.btnSettings)
 
-        dotIndicator = (progressTitle.parent as LinearLayout).getChildAt(0)
+        dotIndicator = findViewById(R.id.dotIndicator)
 
         decoder = Mobile.newDecoder()
         cameraExecutor = Executors.newSingleThreadExecutor()
@@ -271,33 +269,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setDotColor(hex: String) {
-        dotIndicator.setBackgroundResource(R.drawable.dot_waiting)
-        (dotIndicator.background as? android.graphics.drawable.GradientDrawable)?.setColor(Color.parseColor(hex))
+        dotIndicator.setColor(hex)
     }
 
     private fun startBreathingAnimation(hex: String) {
         stopBreathingAnimation()
-        setDotColor(hex)
-        breathingAnimator = ValueAnimator.ofFloat(1f, 1.6f).apply {
-            duration = 800
-            repeatCount = ValueAnimator.INFINITE
-            repeatMode = ValueAnimator.REVERSE
-            addUpdateListener { anim ->
-                val s = anim.animatedValue as Float
-                dotIndicator.scaleX = s
-                dotIndicator.scaleY = s
-                dotIndicator.alpha = 2.2f - s
-            }
-            start()
-        }
+        dotIndicator.setColor(hex)
+        dotIndicator.startBreathing()
     }
 
     private fun stopBreathingAnimation() {
-        breathingAnimator?.cancel()
-        breathingAnimator = null
-        dotIndicator.scaleX = 1f
-        dotIndicator.scaleY = 1f
-        dotIndicator.alpha = 1f
+        dotIndicator.stopBreathing()
     }
 
     private fun setupGestures() {
