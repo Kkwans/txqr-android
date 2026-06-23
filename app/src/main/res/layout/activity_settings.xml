@@ -136,6 +136,7 @@
                     android:letterSpacing="0.08"
                     android:layout_marginBottom="12dp" />
 
+                <!-- 仅扫描 QR 码 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -151,15 +152,17 @@
                         android:textColor="#212121"
                         android:textSize="15sp" />
 
-                    <ImageButton
+                    <TextView
                         android:id="@+id/btnHelpQrOnly"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_help"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:scaleType="center"
-                        android:contentDescription="帮助"
-                        android:layout_marginEnd="8dp" />
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:text="?"
+                        android:textColor="#9E9E9E"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:background="@drawable/bg_help_circle"
+                        android:layout_marginEnd="10dp" />
 
                     <Switch
                         android:id="@+id/switchQrOnly"
@@ -170,6 +173,7 @@
 
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" />
 
+                <!-- 连续自动对焦 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -185,15 +189,17 @@
                         android:textColor="#212121"
                         android:textSize="15sp" />
 
-                    <ImageButton
+                    <TextView
                         android:id="@+id/btnHelpAutoFocus"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_help"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:scaleType="center"
-                        android:contentDescription="帮助"
-                        android:layout_marginEnd="8dp" />
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:text="?"
+                        android:textColor="#9E9E9E"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:background="@drawable/bg_help_circle"
+                        android:layout_marginEnd="10dp" />
 
                     <Switch
                         android:id="@+id/switchAutoFocus"
@@ -204,6 +210,7 @@
 
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" />
 
+                <!-- 扫描区域提示 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -219,15 +226,17 @@
                         android:textColor="#212121"
                         android:textSize="15sp" />
 
-                    <ImageButton
+                    <TextView
                         android:id="@+id/btnHelpOverlay"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_help"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:scaleType="center"
-                        android:contentDescription="帮助"
-                        android:layout_marginEnd="8dp" />
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:text="?"
+                        android:textColor="#9E9E9E"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:background="@drawable/bg_help_circle"
+                        android:layout_marginEnd="10dp" />
 
                     <Switch
                         android:id="@+id/switchShowOverlay"
@@ -257,39 +266,35 @@
                     android:letterSpacing="0.08"
                     android:layout_marginBottom="12dp" />
 
+                <!-- 分析分辨率 -->
                 <LinearLayout
                     android:id="@+id/resolutionRow"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="48dp"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingVertical="12dp"
                     android:clickable="true"
                     android:focusable="true">
 
-                    <LinearLayout
+                    <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:text="分析分辨率"
+                        android:textColor="#212121"
+                        android:textSize="15sp" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="分析分辨率"
-                            android:textColor="#212121"
-                            android:textSize="15sp" />
-                    </LinearLayout>
-
-                    <ImageButton
+                    <TextView
                         android:id="@+id/btnHelpResolution"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_help"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:scaleType="center"
-                        android:contentDescription="帮助"
-                        android:layout_marginEnd="8dp" />
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:text="?"
+                        android:textColor="#9E9E9E"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:background="@drawable/bg_help_circle"
+                        android:layout_marginEnd="10dp" />
 
                     <TextView
                         android:id="@+id/tvResolution"
@@ -297,11 +302,12 @@
                         android:layout_height="wrap_content"
                         android:text="640×480"
                         android:textColor="#1976D2"
-                        android:textSize="14sp" />
+                        android:textSize="14sp"
+                        android:layout_marginEnd="4dp" />
 
                     <TextView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:text="›"
                         android:textColor="#BDBDBD"
                         android:textSize="20sp"
@@ -310,6 +316,7 @@
 
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" />
 
+                <!-- 始终显示进度卡片 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -325,15 +332,17 @@
                         android:textColor="#212121"
                         android:textSize="15sp" />
 
-                    <ImageButton
+                    <TextView
                         android:id="@+id/btnHelpAlwaysShow"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_help"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:scaleType="center"
-                        android:contentDescription="帮助"
-                        android:layout_marginEnd="8dp" />
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:text="?"
+                        android:textColor="#9E9E9E"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:background="@drawable/bg_help_circle"
+                        android:layout_marginEnd="10dp" />
 
                     <Switch
                         android:id="@+id/switchAlwaysShowProgress"
@@ -344,6 +353,7 @@
 
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" />
 
+                <!-- 解码时显示进度卡片 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -359,15 +369,17 @@
                         android:textColor="#212121"
                         android:textSize="15sp" />
 
-                    <ImageButton
+                    <TextView
                         android:id="@+id/btnHelpProgress"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_help"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:scaleType="center"
-                        android:contentDescription="帮助"
-                        android:layout_marginEnd="8dp" />
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:text="?"
+                        android:textColor="#9E9E9E"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:background="@drawable/bg_help_circle"
+                        android:layout_marginEnd="10dp" />
 
                     <Switch
                         android:id="@+id/switchShowProgress"
@@ -415,7 +427,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="v3.6.0 · 离线二维码文件传输"
+                        android:text="v3.7.0 · 离线二维码文件传输"
                         android:textColor="#9E9E9E"
                         android:textSize="12sp"
                         android:layout_marginTop="4dp" />

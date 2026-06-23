@@ -62,7 +62,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|center_horizontal"
-        android:layout_marginTop="58dp"
+        android:layout_marginTop="100dp"
         android:text="💡 双指缩放 · 点击对焦"
         android:textColor="#CCFFFFFF"
         android:textSize="12sp"
@@ -79,17 +79,18 @@
         android:layout_marginHorizontal="12dp"
         android:layout_marginBottom="24dp"
         android:orientation="vertical"
-        android:background="#EE1A1A2E"
+        android:background="@drawable/bg_card_blur"
         android:padding="16dp"
         android:elevation="8dp"
         android:visibility="gone">
 
+        <!-- 标题行 -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="8dp">
+            android:layout_marginBottom="10dp">
 
             <View
                 android:layout_width="10dp"
@@ -116,6 +117,7 @@
                 android:textSize="12sp" />
         </LinearLayout>
 
+        <!-- 进度条 -->
         <ProgressBar
             android:id="@+id/progressBar"
             style="@android:style/Widget.ProgressBar.Horizontal"
@@ -124,9 +126,9 @@
             android:max="100"
             android:progress="0"
             android:progressDrawable="@drawable/progress_bar_gradient"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="12dp" />
+            android:layout_marginBottom="10dp" />
 
+        <!-- 进度百分比 -->
         <TextView
             android:id="@+id/progressPercent"
             android:layout_width="match_parent"
@@ -135,8 +137,9 @@
             android:textColor="#FFFFFF"
             android:textSize="15sp"
             android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
+            android:layout_marginBottom="6dp" />
 
+        <!-- 解码器状态 -->
         <TextView
             android:id="@+id/decoderStatus"
             android:layout_width="match_parent"
@@ -144,8 +147,9 @@
             android:text="解码器: 就绪 | 摄像头: 就绪"
             android:textColor="#99FFFFFF"
             android:textSize="12sp"
-            android:layout_marginBottom="4dp" />
+            android:layout_marginBottom="2dp" />
 
+        <!-- 诊断信息 -->
         <TextView
             android:id="@+id/diagnosticInfo"
             android:layout_width="match_parent"
@@ -155,29 +159,30 @@
             android:textSize="11sp"
             android:layout_marginBottom="14dp" />
 
+        <!-- 开始扫描按钮 -->
         <Button
             android:id="@+id/btnStartScan"
-            android:layout_width="wrap_content"
-            android:layout_height="42dp"
-            android:layout_gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
             android:text="▶ 开始扫描"
             android:textSize="14sp"
-            android:backgroundTint="#4CAF50"
+            android:backgroundTint="#1976D2"
             android:textColor="#FFFFFF"
-            android:paddingHorizontal="24dp"
             android:visibility="gone"
             android:layout_marginBottom="8dp" />
 
+        <!-- 扫描操作按钮组 -->
         <LinearLayout
             android:id="@+id/scanButtons"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <Button
                 android:id="@+id/btnRestart"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="44dp"
                 android:layout_weight="1"
                 android:text="重新开始"
                 android:textSize="13sp"
@@ -188,12 +193,12 @@
             <Button
                 android:id="@+id/btnStop"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="44dp"
                 android:layout_weight="1"
                 android:text="暂停扫描"
                 android:textSize="13sp"
                 android:backgroundTint="#66EF9A9A"
-                android:textColor="#C62828"
+                android:textColor="#EF5350"
                 android:layout_marginStart="6dp" />
         </LinearLayout>
     </LinearLayout>
@@ -205,7 +210,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:orientation="vertical"
-        android:background="#EE1A1A2E"
+        android:background="@drawable/bg_card_blur"
         android:padding="20dp"
         android:layout_marginHorizontal="12dp"
         android:layout_marginBottom="24dp"

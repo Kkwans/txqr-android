@@ -187,8 +187,8 @@ class MainActivity : AppCompatActivity() {
         progressTitle.text = "  等待扫描"
         progressPercent.text = "点击下方按钮开始扫描"
         progressBar.progress = 0
-        decoderStatus.text = ""
-        diagnosticInfo.text = ""
+        decoderStatus.text = "解码器: 就绪 | 摄像头: 就绪"
+        diagnosticInfo.text = "诊断: 0 新帧 | 0 重复"
         fileInfo.text = ""
         btnStartScan.visibility = View.VISIBLE
         scanButtons.visibility = View.GONE
@@ -202,6 +202,10 @@ class MainActivity : AppCompatActivity() {
         scanButtons.visibility = View.VISIBLE
         progressTitle.text = "  正在扫描"
         progressPercent.text = "等待二维码..."
+        progressBar.progress = 0
+        decoderStatus.text = "解码器: 就绪 | 摄像头: 正常"
+        diagnosticInfo.text = "诊断: 0 新帧 | 0 重复"
+        fileInfo.text = ""
         statusText.text = "扫描中..."
     }
 
@@ -217,7 +221,7 @@ class MainActivity : AppCompatActivity() {
         } else {
             isStopped = false
             btnStop.text = "暂停扫描"
-            btnStop.setTextColor(Color.parseColor("#C62828"))
+            btnStop.setTextColor(Color.parseColor("#EF5350"))
             btnStop.backgroundTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#66EF9A9A"))
             statusText.text = "扫描中..."
             progressTitle.text = "  正在解码"
@@ -480,7 +484,7 @@ class MainActivity : AppCompatActivity() {
         if (prefs.getBoolean("always_show_progress", false)) showProgressCardWaiting()
         else progressCard.visibility = View.GONE
         statusText.text = "将摄像头对准二维码动画"; frameCountText.text = ""
-        btnStop.text = "暂停扫描"; btnStop.setTextColor(Color.parseColor("#C62828"))
+        btnStop.text = "暂停扫描"; btnStop.setTextColor(Color.parseColor("#EF5350"))
         btnStop.backgroundTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#66EF9A9A"))
     }
 

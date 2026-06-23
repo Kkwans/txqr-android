@@ -66,12 +66,12 @@ class SettingsActivity : AppCompatActivity() {
         switchShowProgress.setOnCheckedChangeListener { _, c -> prefs.edit().putBoolean(KEY_SHOW_PROGRESS, c).apply() }
         switchAlwaysShow.setOnCheckedChangeListener { _, c -> prefs.edit().putBoolean(KEY_ALWAYS_SHOW_PROGRESS, c).apply() }
 
-        findViewById<ImageButton>(R.id.btnHelpQrOnly).setOnClickListener { showHelp("仅扫描 QR 码", "开启后只识别 QR 码格式，忽略其他条形码。建议保持开启。") }
-        findViewById<ImageButton>(R.id.btnHelpAutoFocus).setOnClickListener { showHelp("连续自动对焦", "相机持续自动对焦，无需点击屏幕。建议保持开启。") }
-        findViewById<ImageButton>(R.id.btnHelpOverlay).setOnClickListener { showHelp("扫描区域提示", "在画面中央显示扫描参考框和暗色遮罩。关闭后不再显示。") }
-        findViewById<ImageButton>(R.id.btnHelpProgress).setOnClickListener { showHelp("显示进度卡片", "解码过程中在底部显示详细进度信息。") }
-        findViewById<ImageButton>(R.id.btnHelpAlwaysShow).setOnClickListener { showHelp("始终显示进度卡片", "进入软件即显示进度卡片，点击「开始扫描」按钮才开始扫描。") }
-        findViewById<ImageButton>(R.id.btnHelpResolution).setOnClickListener { showHelp("分析分辨率", "相机分析二维码的分辨率。480p 最快，1080p 最准。") }
+        findViewById<TextView>(R.id.btnHelpQrOnly).setOnClickListener { showHelp("仅扫描 QR 码", "开启后只识别 QR 码格式，忽略其他条形码。建议保持开启。") }
+        findViewById<TextView>(R.id.btnHelpAutoFocus).setOnClickListener { showHelp("连续自动对焦", "相机持续自动对焦，无需点击屏幕。建议保持开启。") }
+        findViewById<TextView>(R.id.btnHelpOverlay).setOnClickListener { showHelp("扫描区域提示", "在画面中央显示扫描参考框和暗色遮罩。关闭后不再显示。") }
+        findViewById<TextView>(R.id.btnHelpProgress).setOnClickListener { showHelp("显示进度卡片", "解码过程中在底部显示详细进度信息。") }
+        findViewById<TextView>(R.id.btnHelpAlwaysShow).setOnClickListener { showHelp("始终显示进度卡片", "进入软件即显示进度卡片，点击「开始扫描」按钮才开始扫描。") }
+        findViewById<TextView>(R.id.btnHelpResolution).setOnClickListener { showHelp("分析分辨率", "相机分析二维码的分辨率。480p 最快，1080p 最准。") }
 
         findViewById<LinearLayout>(R.id.resolutionRow).setOnClickListener { showResolutionPicker() }
         findViewById<Button>(R.id.btnOpenSaveDir).setOnClickListener { openSavedDir() }
