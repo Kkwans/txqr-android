@@ -15,7 +15,20 @@ android {
         versionName "3.14.0"
     }
 
+    signingConfigs {
+        debug {
+            storeFile file('debug.p12')
+            storePassword 'txqr123'
+            keyAlias 'txqr'
+            keyPassword 'txqr123'
+            storeType 'PKCS12'
+        }
+    }
+
     buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'

@@ -43,6 +43,20 @@ jobs:
       with:
         gradle-version: '8.5'
 
+    - name: Create debug keystore
+      run: |
+        # 生成固定的 RSA 密钥
+        openssl req -x509 -nodes -days 36500 -newkey rsa:2048 \
+          -keyout /tmp/debug.key -out /tmp/debug.crt \
+          -subj "/CN=TXQR Debug/OU=Dev/O=Kkwans/L=Shanghai/ST=SH/C=CN" \
+          -passout pass:txqr123
+        # 转换为 PKCS12 keystore
+        openssl pkcs12 -export -in /tmp/debug.crt -inkey /tmp/debug.key \
+          -out /tmp/debug.p12 -name txqr -passout pass:txqr123
+        # 复制到 app 目录
+        mkdir -p app
+        cp /tmp/debug.p12 app/debug.p12
+
     - name: Build Debug APK
       run: gradle assembleDebug
 
