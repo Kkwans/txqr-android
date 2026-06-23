@@ -424,10 +424,7 @@ class MainActivity : AppCompatActivity() {
         statusText.text = "⏳ $progress% | $unique/$total 帧"
 
         // 确保呼吸动画在运行（解码中用青色）
-        // 确保呼吸动画在运行（解码中用青色）
-        if (breathingAnimator == null || !breathingAnimator!!.isRunning) {
-            startBreathingAnimation("#26C6DA")
-        }
+        startBreathingAnimation("#26C6DA")
 
         updateScanAreaOffset()
     }
