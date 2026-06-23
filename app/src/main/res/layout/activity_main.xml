@@ -162,11 +162,12 @@
         <!-- 开始扫描按钮 -->
         <Button
             android:id="@+id/btnStartScan"
+            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
             android:layout_width="match_parent"
             android:layout_height="42dp"
             android:text="▶ 开始扫描"
             android:textSize="14sp"
-            android:background="@drawable/btn_green"
+            android:backgroundTint="#4CAF50"
             android:textColor="#FFFFFF"
             android:visibility="gone"
             android:layout_marginBottom="8dp" />
@@ -181,23 +182,25 @@
 
             <Button
                 android:id="@+id/btnRestart"
+                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
                 android:layout_width="0dp"
                 android:layout_height="42dp"
                 android:layout_weight="1"
                 android:text="重新开始"
                 android:textSize="13sp"
-                android:background="@drawable/btn_blue"
+                android:backgroundTint="#42A5F5"
                 android:textColor="#FFFFFF"
                 android:layout_marginEnd="6dp" />
 
             <Button
                 android:id="@+id/btnStop"
+                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
                 android:layout_width="0dp"
                 android:layout_height="42dp"
                 android:layout_weight="1"
                 android:text="暂停扫描"
                 android:textSize="13sp"
-                android:background="@drawable/btn_red"
+                android:backgroundTint="#EF5350"
                 android:textColor="#FFFFFF"
                 android:layout_marginStart="6dp" />
         </LinearLayout>

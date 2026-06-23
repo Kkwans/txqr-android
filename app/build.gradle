@@ -11,8 +11,8 @@ android {
         applicationId "com.txqr.reader"
         minSdk 24
         targetSdk 34
-        versionCode 12
-        versionName "3.12.0"
+        versionCode 13
+        versionName "3.13.0"
     }
 
     buildTypes {

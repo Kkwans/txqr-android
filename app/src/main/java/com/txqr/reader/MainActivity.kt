@@ -16,7 +16,9 @@ import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
 import android.graphics.drawable.AnimationDrawable
+import android.animation.ValueAnimator
 import android.widget.Button
+import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.ProgressBar
@@ -85,6 +87,8 @@ class MainActivity : AppCompatActivity() {
     private var currentCamera: Camera? = null
     private lateinit var scaleDetector: ScaleGestureDetector
     private lateinit var gestureDetector: GestureDetector
+    private var breathingAnimator: android.animation.ValueAnimator? = null
+    private var breathingRing: View? = null
 
     private val prefs by lazy { getSharedPreferences("txqr", MODE_PRIVATE) }
 
@@ -222,6 +226,7 @@ class MainActivity : AppCompatActivity() {
         btnStartScan.visibility = View.VISIBLE
         scanButtons.visibility = View.GONE
         dotIndicator.setBackgroundResource(R.drawable.dot_waiting)
+        stopBreathingAnimation()
         updateScanAreaOffset()
     }
 
@@ -238,8 +243,8 @@ class MainActivity : AppCompatActivity() {
         diagnosticInfo.text = "诊断: 0 新帧 | 0 重复"
         fileInfo.text = ""
         statusText.text = "扫描中..."
-        dotIndicator.setBackgroundResource(R.drawable.dot_breathing_scanning)
-        (dotIndicator.background as? AnimationDrawable)?.start()
+        dotIndicator.setBackgroundResource(R.drawable.dot_scanning)
+        startBreathingAnimation(Color.parseColor("#4CAF50"))
         updateScanAreaOffset()
     }
 
@@ -248,23 +253,21 @@ class MainActivity : AppCompatActivity() {
         if (isPaused) {
             isStopped = true
             btnStop.text = "继续扫描"
-            btnStop.setBackgroundResource(R.drawable.btn_green)
+            btnStop.backgroundTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#26C6DA"))
             statusText.text = "已暂停"
             progressTitle.text = "  已暂停"
             dotIndicator.setBackgroundResource(R.drawable.dot_paused)
         } else {
             isStopped = false
             btnStop.text = "暂停扫描"
-            btnStop.setBackgroundResource(R.drawable.btn_red)
+            btnStop.backgroundTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#EF5350"))
             statusText.text = "扫描中..."
             if (isDecoding) {
                 progressTitle.text = "  正在解码"
-                dotIndicator.setBackgroundResource(R.drawable.dot_breathing)
-                (dotIndicator.background as? AnimationDrawable)?.start()
+                startBreathingAnimation(Color.parseColor("#5EFAEB"))
             } else {
                 progressTitle.text = "  正在扫描"
-                dotIndicator.setBackgroundResource(R.drawable.dot_breathing_scanning)
-                (dotIndicator.background as? AnimationDrawable)?.start()
+                startBreathingAnimation(Color.parseColor("#4CAF50"))
             }
         }
     }
@@ -291,6 +294,56 @@ class MainActivity : AppCompatActivity() {
             }
         })
         previewView.setOnTouchListener { _, event -> scaleDetector.onTouchEvent(event); gestureDetector.onTouchEvent(event); true }
+    }
+
+    private fun startBreathingAnimation(color: Int) {
+        stopBreathingAnimation()
+        // 设置圆点颜色
+        dotIndicator.setBackgroundResource(R.drawable.dot_waiting)
+        (dotIndicator.background as? android.graphics.drawable.GradientDrawable)?.setColor(color)
+
+        // 创建涟漪环
+        if (breathingRing == null) {
+            breathingRing = View(this).apply {
+                layoutParams = FrameLayout.LayoutParams(24, 24).apply {
+                    gravity = android.view.Gravity.BOTTOM or android.view.Gravity.CENTER_HORIZONTAL
+                }
+                background = android.graphics.drawable.GradientDrawable().apply {
+                    shape = android.graphics.drawable.GradientDrawable.OVAL
+                    setColor(android.graphics.Color.TRANSPARENT)
+                    setStroke(2, color)
+                }
+            }
+            // 添加到进度卡片的标题行父容器
+            val parent = dotIndicator.parent as? LinearLayout
+            parent?.addView(breathingRing)
+        }
+
+        // 动画：缩放+透明度
+        breathingAnimator = ValueAnimator.ofFloat(1f, 2.5f).apply {
+            duration = 1500
+            repeatCount = ValueAnimator.INFINITE
+            repeatMode = ValueAnimator.REVERSE
+            addUpdateListener { animator ->
+                val scale = animator.animatedValue as Float
+                breathingRing?.apply {
+                    scaleX = scale
+                    scaleY = scale
+                    alpha = 1f - (scale - 1f) / 1.5f
+                }
+            }
+            start()
+        }
+    }
+
+    private fun stopBreathingAnimation() {
+        breathingAnimator?.cancel()
+        breathingAnimator = null
+        breathingRing?.apply {
+            scaleX = 1f
+            scaleY = 1f
+            alpha = 0f
+        }
     }
 
     private fun getResolutionFromPrefs(): Size {
@@ -412,9 +465,8 @@ class MainActivity : AppCompatActivity() {
         statusText.text = "⏳ $progress% | $unique/$total 帧"
 
         // 确保呼吸动画在运行（解码中用青色）
-        if (dotIndicator.background !is AnimationDrawable || !(dotIndicator.background as AnimationDrawable).isRunning) {
-            dotIndicator.setBackgroundResource(R.drawable.dot_breathing)
-            (dotIndicator.background as? AnimationDrawable)?.start()
+        if (breathingAnimator == null || !breathingAnimator!!.isRunning) {
+            startBreathingAnimation(Color.parseColor("#5EFAEB"))
         }
 
         updateScanAreaOffset()
@@ -531,12 +583,12 @@ class MainActivity : AppCompatActivity() {
         decoder.reset(); isStopped = false; isPaused = false; isScanning = false; isDecoding = false
         totalFramesProcessed = 0; newFrames = 0; duplicateFrames = 0; uniqueFrames = 0
         resultPanel.visibility = View.GONE; overlayView.clear(); lastSavedFile = null
+        stopBreathingAnimation()
         if (prefs.getBoolean("always_show_progress", true)) showProgressCardWaiting()
         else { progressCard.visibility = View.GONE; updateScanAreaOffset() }
         statusText.text = "将摄像头对准二维码动画"; frameCountText.text = ""
         btnStop.text = "暂停扫描"
-        btnStop.setBackgroundResource(R.drawable.btn_red)
-        dotIndicator.setBackgroundResource(R.drawable.dot_indicator)
+        btnStop.backgroundTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#EF5350"))
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all { ContextCompat.checkSelfPermission(baseContext, it) == PackageManager.PERMISSION_GRANTED }
