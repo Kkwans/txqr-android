@@ -162,15 +162,12 @@
 
                         <TextView
                             android:id="@+id/btnHelpQrOnly"
-                            android:layout_width="18dp"
-                            android:layout_height="18dp"
-                            android:text="?"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text=" (?)"
                             android:textColor="#BDBDBD"
                             android:textSize="12sp"
-                            android:gravity="center"
-                            android:background="@drawable/bg_help_circle"
-                            
-                            android:layout_marginStart="4dp" />
+                            android:layout_marginStart="2dp" />
                     </LinearLayout>
 
                     <Switch
@@ -208,15 +205,12 @@
 
                         <TextView
                             android:id="@+id/btnHelpAutoFocus"
-                            android:layout_width="18dp"
-                            android:layout_height="18dp"
-                            android:text="?"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text=" (?)"
                             android:textColor="#BDBDBD"
                             android:textSize="12sp"
-                            android:gravity="center"
-                            android:background="@drawable/bg_help_circle"
-                            
-                            android:layout_marginStart="4dp" />
+                            android:layout_marginStart="2dp" />
                     </LinearLayout>
 
                     <Switch
@@ -254,15 +248,12 @@
 
                         <TextView
                             android:id="@+id/btnHelpOverlay"
-                            android:layout_width="18dp"
-                            android:layout_height="18dp"
-                            android:text="?"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text=" (?)"
                             android:textColor="#BDBDBD"
                             android:textSize="12sp"
-                            android:gravity="center"
-                            android:background="@drawable/bg_help_circle"
-                            
-                            android:layout_marginStart="4dp" />
+                            android:layout_marginStart="2dp" />
                     </LinearLayout>
 
                     <Switch
@@ -322,15 +313,12 @@
 
                         <TextView
                             android:id="@+id/btnHelpResolution"
-                            android:layout_width="18dp"
-                            android:layout_height="18dp"
-                            android:text="?"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text=" (?)"
                             android:textColor="#BDBDBD"
                             android:textSize="12sp"
-                            android:gravity="center"
-                            android:background="@drawable/bg_help_circle"
-                            
-                            android:layout_marginStart="4dp" />
+                            android:layout_marginStart="2dp" />
                     </LinearLayout>
 
                     <Spinner
@@ -390,15 +378,12 @@
 
                         <TextView
                             android:id="@+id/btnHelpAlwaysShow"
-                            android:layout_width="18dp"
-                            android:layout_height="18dp"
-                            android:text="?"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text=" (?)"
                             android:textColor="#BDBDBD"
                             android:textSize="12sp"
-                            android:gravity="center"
-                            android:background="@drawable/bg_help_circle"
-                            
-                            android:layout_marginStart="4dp" />
+                            android:layout_marginStart="2dp" />
                     </LinearLayout>
 
                     <Switch
@@ -436,15 +421,12 @@
 
                         <TextView
                             android:id="@+id/btnHelpProgress"
-                            android:layout_width="18dp"
-                            android:layout_height="18dp"
-                            android:text="?"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text=" (?)"
                             android:textColor="#BDBDBD"
                             android:textSize="12sp"
-                            android:gravity="center"
-                            android:background="@drawable/bg_help_circle"
-                            
-                            android:layout_marginStart="4dp" />
+                            android:layout_marginStart="2dp" />
                     </LinearLayout>
 
                     <Switch
@@ -461,63 +443,51 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:background="@drawable/bg_card"
-                android:padding="16dp"
+                android:padding="20dp"
                 android:layout_marginBottom="12dp"
-                android:elevation="1dp">
+                android:elevation="1dp"
+                android:gravity="center">
 
                 <TextView
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="关于"
+                    android:text="TXQR 接收器"
+                    android:textColor="#212121"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="v3.14.0 · 离线二维码文件传输"
+                    android:textColor="#9E9E9E"
+                    android:textSize="12sp"
+                    android:layout_marginTop="4dp" />
+
+                <View
+                    android:layout_width="40dp"
+                    android:layout_height="1dp"
+                    android:background="#E0E0E0"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="作者: Kkwans"
+                    android:textColor="#757575"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tvGithub"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="GitHub: Kkwans/txqr-android"
                     android:textColor="#1976D2"
                     android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.08"
-                    android:layout_marginBottom="12dp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                            android:background="@drawable/bg_help_circle"
-                    android:padding="12dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="TXQR 接收器"
-                        android:textColor="#212121"
-                        android:textSize="18sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="v3.12.0 · 离线二维码文件传输"
-                        android:textColor="#9E9E9E"
-                        android:textSize="12sp"
-                        android:layout_marginTop="4dp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="作者: Kkwans"
-                        android:textColor="#757575"
-                        android:textSize="12sp"
-                        android:layout_marginTop="8dp" />
-
-                    <TextView
-                        android:id="@+id/tvGithub"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="GitHub: Kkwans/txqr-android"
-                        android:textColor="#1976D2"
-                        android:textSize="12sp"
-                        android:layout_marginTop="4dp"
-                        android:clickable="true"
-                        android:focusable="true" />
-                </LinearLayout>
+                    android:layout_marginTop="4dp"
+                    android:clickable="true"
+                    android:focusable="true" />
             </LinearLayout>
 
         </LinearLayout>
