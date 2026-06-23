@@ -302,21 +302,22 @@ class MainActivity : AppCompatActivity() {
         dotIndicator.setBackgroundResource(R.drawable.dot_waiting)
         (dotIndicator.background as? android.graphics.drawable.GradientDrawable)?.setColor(color)
 
-        // 创建涟漪环
+        // 创建涟漪环（覆盖在圆点上）
         if (breathingRing == null) {
+            val parent = dotIndicator.parent as? LinearLayout ?: return
             breathingRing = View(this).apply {
-                layoutParams = FrameLayout.LayoutParams(24, 24).apply {
-                    gravity = android.view.Gravity.BOTTOM or android.view.Gravity.CENTER_HORIZONTAL
+                layoutParams = LinearLayout.LayoutParams(24, 24).apply {
+                    gravity = android.view.Gravity.CENTER_VERTICAL
                 }
                 background = android.graphics.drawable.GradientDrawable().apply {
                     shape = android.graphics.drawable.GradientDrawable.OVAL
                     setColor(android.graphics.Color.TRANSPARENT)
-                    setStroke(2, color)
+                    setStroke(3, color)
                 }
+                // 定位到圆点位置
+                val dotIndex = parent.indexOfChild(dotIndicator)
+                parent.addView(this, dotIndex)
             }
-            // 添加到进度卡片的标题行父容器
-            val parent = dotIndicator.parent as? LinearLayout
-            parent?.addView(breathingRing)
         }
 
         // 动画：缩放+透明度
