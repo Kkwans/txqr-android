@@ -238,7 +238,8 @@ class MainActivity : AppCompatActivity() {
         diagnosticInfo.text = "诊断: 0 新帧 | 0 重复"
         fileInfo.text = ""
         statusText.text = "扫描中..."
-        dotIndicator.setBackgroundResource(R.drawable.dot_scanning)
+        dotIndicator.setBackgroundResource(R.drawable.dot_breathing_scanning)
+        (dotIndicator.background as? AnimationDrawable)?.start()
         updateScanAreaOffset()
     }
 
