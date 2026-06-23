@@ -7,11 +7,9 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.DocumentsContract
-import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.LinearLayout
-import android.widget.Spinner
 import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
@@ -23,6 +21,7 @@ class SettingsActivity : AppCompatActivity() {
 
     private lateinit var prefs: SharedPreferences
     private lateinit var tvSaveDir: TextView
+    private lateinit var tvResolution: TextView
 
     companion object {
         const val PREFS_NAME = "txqr"
@@ -32,12 +31,12 @@ class SettingsActivity : AppCompatActivity() {
         const val KEY_AUTO_FOCUS = "auto_focus"
         const val KEY_SHOW_OVERLAY = "show_overlay"
         const val KEY_SHOW_PROGRESS = "show_progress"
+        const val KEY_ALWAYS_SHOW_PROGRESS = "always_show_progress"
         const val KEY_RESOLUTION = "resolution"
         const val REQUEST_CODE_OPEN_DOCUMENT_TREE = 1001
 
-        // 分辨率选项: 值 -> 目标分辨率
-        val RESOLUTIONS = arrayOf("640×480", "1280×720", "1920×1080")
-        val RESOLUTION_VALUES = arrayOf("640x480", "1280x720", "1920x1080")
+        val RESOLUTION_LABELS = arrayOf("480p (最快)", "720p (均衡)", "1080p (最准)", "1440p (超清)")
+        val RESOLUTION_VALUES = arrayOf("640x480", "1280x720", "1920x1080", "2560x1440")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,21 +46,23 @@ class SettingsActivity : AppCompatActivity() {
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
 
         tvSaveDir = findViewById(R.id.tvSaveDir)
-        val btnOpenSaveDir = findViewById<Button>(R.id.btnOpenSaveDir)
+        tvResolution = findViewById(R.id.tvResolution)
         val switchQrOnly = findViewById<Switch>(R.id.switchQrOnly)
         val switchAutoFocus = findViewById<Switch>(R.id.switchAutoFocus)
         val switchShowOverlay = findViewById<Switch>(R.id.switchShowOverlay)
         val switchShowProgress = findViewById<Switch>(R.id.switchShowProgress)
-        val spinnerResolution = findViewById<Spinner>(R.id.spinnerResolution)
+        val switchAlwaysShowProgress = findViewById<Switch>(R.id.switchAlwaysShowProgress)
         val btnBack = findViewById<ImageButton>(R.id.btnBack)
 
         updateDirDisplay()
+        updateResolutionDisplay()
 
-        // 初始化开关状态
+        // 开关状态
         switchQrOnly.isChecked = prefs.getBoolean(KEY_QR_ONLY, true)
         switchAutoFocus.isChecked = prefs.getBoolean(KEY_AUTO_FOCUS, true)
         switchShowOverlay.isChecked = prefs.getBoolean(KEY_SHOW_OVERLAY, true)
         switchShowProgress.isChecked = prefs.getBoolean(KEY_SHOW_PROGRESS, true)
+        switchAlwaysShowProgress.isChecked = prefs.getBoolean(KEY_ALWAYS_SHOW_PROGRESS, false)
 
         // 开关监听
         switchQrOnly.setOnCheckedChangeListener { _, isChecked ->
@@ -76,47 +77,46 @@ class SettingsActivity : AppCompatActivity() {
         switchShowProgress.setOnCheckedChangeListener { _, isChecked ->
             prefs.edit().putBoolean(KEY_SHOW_PROGRESS, isChecked).apply()
         }
-
-        // 分辨率选择器
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, RESOLUTIONS)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinnerResolution.adapter = adapter
-        val currentRes = prefs.getString(KEY_RESOLUTION, "640x480") ?: "640x480"
-        val resIndex = RESOLUTION_VALUES.indexOf(currentRes).coerceAtLeast(0)
-        spinnerResolution.setSelection(resIndex)
-        spinnerResolution.setOnItemSelectedListener(object : android.widget.AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
-                prefs.edit().putString(KEY_RESOLUTION, RESOLUTION_VALUES[position]).apply()
-            }
-            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
-        })
-
-        // 帮助弹窗
-        findViewById<ImageButton>(R.id.btnHelpQrOnly).setOnClickListener {
-            showHelp("仅扫描 QR 码", "开启后只识别 QR 码格式，忽略其他条形码。\n\n建议保持开启，可提升识别速度。")
+        switchAlwaysShowProgress.setOnCheckedChangeListener { _, isChecked ->
+            prefs.edit().putBoolean(KEY_ALWAYS_SHOW_PROGRESS, isChecked).apply()
         }
-        findViewById<ImageButton>(R.id.btnHelpAutoFocus).setOnClickListener {
-            showHelp("连续自动对焦", "相机持续自动对焦，无需点击屏幕。\n\n建议保持开启，确保二维码始终清晰。")
+
+        // 分辨率选择（弹窗式）
+        findViewById<LinearLayout>(R.id.resolutionRow).setOnClickListener {
+            showResolutionPicker()
         }
 
         // 文件保存
-        btnOpenSaveDir.setOnClickListener { openSavedDir() }
+        findViewById<Button>(R.id.btnOpenSaveDir).setOnClickListener { openSavedDir() }
         findViewById<LinearLayout>(R.id.saveDirRow).setOnClickListener { chooseDirectory() }
         btnBack.setOnClickListener { finish() }
 
         // GitHub 链接
         findViewById<TextView>(R.id.tvGithub).setOnClickListener {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Kkwans/txqr-android"))
-            startActivity(intent)
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Kkwans/txqr-android")))
         }
     }
 
-    private fun showHelp(title: String, message: String) {
+    private fun showResolutionPicker() {
+        val currentIndex = RESOLUTION_VALUES.indexOf(
+            prefs.getString(KEY_RESOLUTION, "640x480") ?: "640x480"
+        ).coerceAtLeast(0)
+
         AlertDialog.Builder(this)
-            .setTitle(title)
-            .setMessage(message)
-            .setPositiveButton("知道了", null)
+            .setTitle("分析分辨率")
+            .setSingleChoiceItems(RESOLUTION_LABELS, currentIndex) { dialog, which ->
+                prefs.edit().putString(KEY_RESOLUTION, RESOLUTION_VALUES[which]).apply()
+                updateResolutionDisplay()
+                dialog.dismiss()
+            }
+            .setNegativeButton("取消", null)
             .show()
+    }
+
+    private fun updateResolutionDisplay() {
+        val currentRes = prefs.getString(KEY_RESOLUTION, "640x480") ?: "640x480"
+        val index = RESOLUTION_VALUES.indexOf(currentRes).coerceAtLeast(0)
+        tvResolution.text = RESOLUTION_LABELS[index]
     }
 
     private fun updateDirDisplay() {
@@ -130,8 +130,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun cleanPath(path: String): String {
-        return path
-            .removePrefix("/storage/emulated/0")
+        return path.removePrefix("/storage/emulated/0")
             .let { if (it.startsWith("/")) it else "/$it" }
     }
 
@@ -154,27 +153,22 @@ class SettingsActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_CODE_OPEN_DOCUMENT_TREE && resultCode == Activity.RESULT_OK) {
             val uri = data?.data ?: return
-
             try {
                 contentResolver.takePersistableUriPermission(
-                    uri,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                 )
             } catch (_: Exception) {}
 
             prefs.edit().putString(KEY_SAVE_DIR_URI, uri.toString()).apply()
-
             val path = getPathFromTreeUri(uri)
             if (path != null) {
                 prefs.edit().putString(KEY_SAVE_DIR, path).apply()
                 tvSaveDir.text = cleanPath(path)
             } else {
                 val docId = DocumentsContract.getTreeDocumentId(uri)
-                val displayName = docId.split(":").lastOrNull() ?: "已选择目录"
-                tvSaveDir.text = "/$displayName"
+                tvSaveDir.text = "/${docId.split(":").lastOrNull() ?: "已选择目录"}"
                 prefs.edit().putString(KEY_SAVE_DIR, "").apply()
             }
-
             Toast.makeText(this, "✅ 保存目录已修改", Toast.LENGTH_SHORT).show()
         }
     }
@@ -189,19 +183,16 @@ class SettingsActivity : AppCompatActivity() {
             openDirWithFileManager(dir)
             return
         }
-
         if (savedUri.isNotEmpty()) {
             try {
-                val treeUri = Uri.parse(savedUri)
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
-                    putExtra(DocumentsContract.EXTRA_INITIAL_URI, treeUri)
+                    putExtra(DocumentsContract.EXTRA_INITIAL_URI, Uri.parse(savedUri))
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
                 startActivity(intent)
                 return
             } catch (_: Exception) {}
         }
-
         val dir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "TXQR")
         if (!dir.exists()) dir.mkdirs()
         openDirWithFileManager(dir)
@@ -217,14 +208,12 @@ class SettingsActivity : AppCompatActivity() {
             startActivity(intent)
             return
         } catch (_: Exception) {}
-
         try {
             val intent = Intent.makeMainSelectorActivity(Intent.ACTION_MAIN, Intent.CATEGORY_APP_FILES)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(intent)
             return
         } catch (_: Exception) {}
-
         try {
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 data = Uri.fromFile(dir)
@@ -233,11 +222,8 @@ class SettingsActivity : AppCompatActivity() {
             startActivity(intent)
             return
         } catch (_: Exception) {}
-
         try {
-            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            startActivity(intent)
+            startActivity(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) })
         } catch (_: Exception) {
             Toast.makeText(this, "请在文件管理器查看: ${dir.absolutePath}", Toast.LENGTH_LONG).show()
         }
@@ -254,8 +240,6 @@ class SettingsActivity : AppCompatActivity() {
                     "/storage/emulated/0"
                 else -> null
             }
-        } catch (e: Exception) {
-            null
-        }
+        } catch (e: Exception) { null }
     }
 }

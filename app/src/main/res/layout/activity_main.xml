@@ -43,13 +43,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="#CCFFFFFF"
-            android:textSize="13sp" />
+            android:textSize="13sp"
+            android:layout_marginEnd="10dp" />
 
         <ImageButton
             android:id="@+id/btnSettings"
             android:layout_width="36dp"
             android:layout_height="36dp"
-            android:layout_marginStart="10dp"
             android:background="@android:color/transparent"
             android:src="@drawable/ic_settings"
             android:tint="#FFFFFF"
@@ -58,7 +58,21 @@
             android:contentDescription="设置" />
     </LinearLayout>
 
-    <!-- 进度信息卡片（底部，毛玻璃效果） -->
+    <!-- 底部提示（双指缩放+点击对焦） -->
+    <TextView
+        android:id="@+id/hintText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="12dp"
+        android:text="💡 双指缩放 · 点击对焦"
+        android:textColor="#CCFFFFFF"
+        android:textSize="12sp"
+        android:background="#66000000"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="6dp" />
+
+    <!-- 进度信息卡片（底部） -->
     <LinearLayout
         android:id="@+id/progressCard"
         android:layout_width="match_parent"
@@ -148,8 +162,23 @@
             android:textSize="11sp"
             android:layout_marginBottom="14dp" />
 
-        <!-- 重新开始 / 停止按钮 -->
+        <!-- 开始扫描按钮（仅在始终显示模式下可见） -->
+        <Button
+            android:id="@+id/btnStartScan"
+            android:layout_width="wrap_content"
+            android:layout_height="42dp"
+            android:layout_gravity="center"
+            android:text="▶ 开始扫描"
+            android:textSize="14sp"
+            android:backgroundTint="#4CAF50"
+            android:textColor="#FFFFFF"
+            android:paddingHorizontal="24dp"
+            android:visibility="gone"
+            android:layout_marginBottom="8dp" />
+
+        <!-- 重新开始 / 暂停按钮 -->
         <LinearLayout
+            android:id="@+id/scanButtons"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
@@ -170,9 +199,9 @@
                 android:layout_width="0dp"
                 android:layout_height="40dp"
                 android:layout_weight="1"
-                android:text="停止扫描"
+                android:text="暂停扫描"
                 android:textSize="13sp"
-                android:backgroundTint="#33FF5252"
+                android:backgroundTint="#66FF5252"
                 android:textColor="#FF5252"
                 android:layout_marginStart="6dp" />
         </LinearLayout>
