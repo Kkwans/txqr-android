@@ -168,11 +168,11 @@ class MainActivity : AppCompatActivity() {
         if (alwaysShow && !isScanning && !decoder.isCompleted()) {
             // 始终显示开启，非解码状态 → 显示等待卡片
             showProgressCardWaiting()
-        } else if (!alwaysShow && !showProgress) {
-            // 始终显示关闭 + 解码时显示也关闭 → 隐藏进度卡片
+        } else if (!alwaysShow && !showProgress && progressCard.visibility == View.VISIBLE) {
+            // 始终显示关闭 + 解码时显示也关闭 + 卡片当前可见 → 立即隐藏
             progressCard.visibility = View.GONE
         }
-        // 其他情况（始终显示关闭但解码时显示开启、或正在解码）→ 保持当前状态
+        // 其他情况（始终显示关闭但解码时显示开启且正在解码）→ 保持当前状态
 
         updateScanAreaOffset()
     }
@@ -505,7 +505,7 @@ class MainActivity : AppCompatActivity() {
         else { progressCard.visibility = View.GONE; updateScanAreaOffset() }
         statusText.text = "将摄像头对准二维码动画"; frameCountText.text = ""
         btnStop.text = "暂停扫描"; btnStop.setTextColor(Color.parseColor("#EF5350"))
-        btnStop.backgroundTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#66EF9A9A"))
+        btnStop.backgroundTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#FFCDD2"))
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all { ContextCompat.checkSelfPermission(baseContext, it) == PackageManager.PERMISSION_GRANTED }
