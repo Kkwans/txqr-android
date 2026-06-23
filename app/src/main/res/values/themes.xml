@@ -11,9 +11,11 @@
     </style>
 
     <style name="RoundedDialog" parent="Theme.MaterialComponents.Light.Dialog.Alert">
-        <item name="shapeAppearanceOverlay">@style/RoundedDialogCorners</item>
+        <item name="android:windowBackground">@drawable/bg_dialog_rounded</item>
         <item name="colorPrimary">#1976D2</item>
         <item name="android:textColorPrimary">#212121</item>
+        <item name="android:textColorSecondary">#757575</item>
+        <item name="shapeAppearanceOverlay">@style/RoundedDialogCorners</item>
     </style>
 
     <style name="RoundedDialogCorners">

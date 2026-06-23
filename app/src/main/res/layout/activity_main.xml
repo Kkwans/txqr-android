@@ -82,7 +82,7 @@
         android:background="@drawable/bg_card_blur"
         android:padding="16dp"
         android:elevation="8dp"
-        android:minHeight="280dp"
+        android:minHeight="180dp"
         android:visibility="gone">
 
         <!-- 标题行 -->
@@ -187,7 +187,7 @@
                 android:layout_weight="1"
                 android:text="重新开始"
                 android:textSize="13sp"
-                android:backgroundTint="#66FFFFFF"
+                android:background="#33FFFFFF"
                 android:textColor="#FFFFFF"
                 android:layout_marginEnd="6dp" />
 
@@ -198,8 +198,8 @@
                 android:layout_weight="1"
                 android:text="暂停扫描"
                 android:textSize="13sp"
-                android:backgroundTint="#66EF9A9A"
-                android:textColor="#EF5350"
+                android:background="#4DFFCDD2"
+                android:textColor="#C62828"
                 android:layout_marginStart="6dp" />
         </LinearLayout>
     </LinearLayout>
@@ -263,7 +263,7 @@
             android:layout_marginTop="8dp"
             android:text="🔄 继续扫描"
             android:textSize="14sp"
-            android:backgroundTint="#33FFFFFF"
+            android:background="#33FFFFFF"
             android:textColor="#FFFFFF" />
     </LinearLayout>
 

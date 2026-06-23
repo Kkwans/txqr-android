@@ -163,11 +163,17 @@ class MainActivity : AppCompatActivity() {
         overlayView.setScanAreaVisible(prefs.getBoolean("show_overlay", true))
 
         val alwaysShow = prefs.getBoolean("always_show_progress", true)
-        if (alwaysShow && !isScanning && !decoder.isCompleted()) {
-            showProgressCardWaiting()
-        }
+        val showProgress = prefs.getBoolean("show_progress", true)
 
-        // 进度卡片显示时，扫描区域上移 120dp
+        if (alwaysShow && !isScanning && !decoder.isCompleted()) {
+            // 始终显示开启，非解码状态 → 显示等待卡片
+            showProgressCardWaiting()
+        } else if (!alwaysShow && !showProgress) {
+            // 始终显示关闭 + 解码时显示也关闭 → 隐藏进度卡片
+            progressCard.visibility = View.GONE
+        }
+        // 其他情况（始终显示关闭但解码时显示开启、或正在解码）→ 保持当前状态
+
         updateScanAreaOffset()
     }
 
@@ -175,7 +181,7 @@ class MainActivity : AppCompatActivity() {
         val showP = prefs.getBoolean("show_progress", true)
         val always = prefs.getBoolean("always_show_progress", true)
         val cardVisible = (showP || always) && progressCard.visibility == View.VISIBLE
-        val offsetPx = if (cardVisible) 120f * resources.displayMetrics.density else 0f
+        val offsetPx = if (cardVisible) 80f * resources.displayMetrics.density else 0f
         overlayView.setScanAreaOffset(offsetPx)
     }
 
@@ -228,14 +234,14 @@ class MainActivity : AppCompatActivity() {
             isStopped = true
             btnStop.text = "继续扫描"
             btnStop.setTextColor(Color.parseColor("#2E7D32"))
-            btnStop.backgroundTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#A5D6A7"))
+            btnStop.setBackgroundColor(Color.parseColor("#A5D6A7"))
             statusText.text = "已暂停"
             progressTitle.text = "  已暂停"
         } else {
             isStopped = false
             btnStop.text = "暂停扫描"
-            btnStop.setTextColor(Color.parseColor("#EF5350"))
-            btnStop.backgroundTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#66EF9A9A"))
+            btnStop.setTextColor(Color.parseColor("#C62828"))
+            btnStop.setBackgroundColor(Color.parseColor("#FFCDD2"))
             statusText.text = "扫描中..."
             progressTitle.text = "  正在解码"
         }
