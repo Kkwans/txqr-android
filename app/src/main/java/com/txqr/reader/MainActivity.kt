@@ -220,6 +220,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /** 根据设置返回相机分析分辨率 */
+    private fun getResolutionFromPrefs(): Size {
+        val res = prefs.getString("resolution", "640x480") ?: "640x480"
+        return when (res) {
+            "1280x720" -> Size(1280, 720)
+            "1920x1080" -> Size(1920, 1080)
+            else -> Size(640, 480)
+        }
+    }
+
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
@@ -238,7 +248,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             val imageAnalysis = ImageAnalysis.Builder()
-                .setTargetResolution(Size(640, 480))
+                .setTargetResolution(getResolutionFromPrefs())
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
                 .build()
@@ -362,10 +372,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateProgressDisplay() {
+        // 检查是否显示进度卡片
+        if (!prefs.getBoolean("show_progress", true)) return
+
         val progress = decoder.progress().toInt()
         val unique = decoder.uniqueFrames().toInt()
         val totalFrames = decoder.totalFrames().toInt()
-        val dataSize = decoder.totalSize().toInt()
 
         progressCard.visibility = View.VISIBLE
         progressBar.progress = progress

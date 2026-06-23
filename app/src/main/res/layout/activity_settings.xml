@@ -67,6 +67,7 @@
                     android:letterSpacing="0.08"
                     android:layout_marginBottom="12dp" />
 
+                <!-- 保存目录 -->
                 <LinearLayout
                     android:id="@+id/saveDirRow"
                     android:layout_width="match_parent"
@@ -93,7 +94,7 @@
                         android:text="/Download/TXQR"
                         android:textColor="#9E9E9E"
                         android:textSize="13sp"
-                        android:maxWidth="200dp"
+                        android:maxWidth="180dp"
                         android:maxLines="1"
                         android:ellipsize="middle" />
 
@@ -109,10 +110,10 @@
                 <Button
                     android:id="@+id/btnOpenSaveDir"
                     android:layout_width="match_parent"
-                    android:layout_height="42dp"
+                    android:layout_height="40dp"
                     android:text="📂 查看保存目录"
-                    android:textSize="14sp"
-                    android:layout_marginTop="10dp"
+                    android:textSize="13sp"
+                    android:layout_marginTop="8dp"
                     android:backgroundTint="#E3F2FD"
                     android:textColor="#1976D2" />
             </LinearLayout>
@@ -137,6 +138,7 @@
                     android:letterSpacing="0.08"
                     android:layout_marginBottom="12dp" />
 
+                <!-- 仅扫描QR码 + 帮助 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -152,13 +154,23 @@
                         android:textColor="#212121"
                         android:textSize="15sp" />
 
+                    <ImageButton
+                        android:id="@+id/btnHelpQrOnly"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/ic_help"
+                        android:background="@android:color/transparent"
+                        android:scaleType="center"
+                        android:contentDescription="帮助"
+                        android:layout_marginEnd="8dp" />
+
                     <Switch
                         android:id="@+id/switchQrOnly"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="true"
-                        android:thumbTint="#1976D2"
-                        android:trackTint="#331976D2" />
+                        android:thumb="@drawable/switch_thumb"
+                        android:track="@drawable/switch_track_selector" />
                 </LinearLayout>
 
                 <View
@@ -166,6 +178,7 @@
                     android:layout_height="1dp"
                     android:background="#F0F0F0" />
 
+                <!-- 自动对焦 + 帮助 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -177,46 +190,173 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="识别框动画"
+                        android:text="连续自动对焦"
                         android:textColor="#212121"
                         android:textSize="15sp" />
 
-                    <Switch
-                        android:id="@+id/switchShowOverlay"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:checked="true"
-                        android:thumbTint="#1976D2"
-                        android:trackTint="#331976D2" />
-                </LinearLayout>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="#F0F0F0" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:padding="14dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="自动对焦"
-                        android:textColor="#212121"
-                        android:textSize="15sp" />
+                    <ImageButton
+                        android:id="@+id/btnHelpAutoFocus"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/ic_help"
+                        android:background="@android:color/transparent"
+                        android:scaleType="center"
+                        android:contentDescription="帮助"
+                        android:layout_marginEnd="8dp" />
 
                     <Switch
                         android:id="@+id/switchAutoFocus"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="true"
-                        android:thumbTint="#1976D2"
-                        android:trackTint="#331976D2" />
+                        android:thumb="@drawable/switch_thumb"
+                        android:track="@drawable/switch_track_selector" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 卡片：性能设置 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:padding="16dp"
+                android:layout_marginBottom="12dp"
+                android:elevation="1dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="性能设置"
+                    android:textColor="#1976D2"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.08"
+                    android:layout_marginBottom="12dp" />
+
+                <!-- 分辨率选择 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="14dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="分析分辨率"
+                            android:textColor="#212121"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="低分辨率识别更快，高分辨率更准确"
+                            android:textColor="#9E9E9E"
+                            android:textSize="12sp"
+                            android:layout_marginTop="2dp" />
+                    </LinearLayout>
+
+                    <Spinner
+                        android:id="@+id/spinnerResolution"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:minWidth="100dp" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#F0F0F0" />
+
+                <!-- 扫描区域提示 + 帮助 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="14dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="扫描区域提示"
+                            android:textColor="#212121"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="在画面中央显示扫描参考框"
+                            android:textColor="#9E9E9E"
+                            android:textSize="12sp"
+                            android:layout_marginTop="2dp" />
+                    </LinearLayout>
+
+                    <Switch
+                        android:id="@+id/switchShowOverlay"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:thumb="@drawable/switch_thumb"
+                        android:track="@drawable/switch_track_selector" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#F0F0F0" />
+
+                <!-- 进度卡片显示 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="14dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="显示进度卡片"
+                            android:textColor="#212121"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="解码过程中显示进度信息"
+                            android:textColor="#9E9E9E"
+                            android:textSize="12sp"
+                            android:layout_marginTop="2dp" />
+                    </LinearLayout>
+
+                    <Switch
+                        android:id="@+id/switchShowProgress"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:thumb="@drawable/switch_thumb"
+                        android:track="@drawable/switch_track_selector" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -258,7 +398,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="v3.3.0 · 离线二维码文件传输"
+                        android:text="v3.4.0 · 离线二维码文件传输"
                         android:textColor="#9E9E9E"
                         android:textSize="12sp"
                         android:layout_marginTop="4dp" />
