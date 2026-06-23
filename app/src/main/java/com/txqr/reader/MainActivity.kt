@@ -89,7 +89,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var scaleDetector: ScaleGestureDetector
     private lateinit var gestureDetector: GestureDetector
     private var breathingAnimator: android.animation.ValueAnimator? = null
-    private var breathingRing: View? = null
 
     private val prefs by lazy { getSharedPreferences("txqr", MODE_PRIVATE) }
 
@@ -303,36 +302,16 @@ class MainActivity : AppCompatActivity() {
         dotIndicator.setBackgroundResource(R.drawable.dot_waiting)
         (dotIndicator.background as? android.graphics.drawable.GradientDrawable)?.setColor(color)
 
-        // 创建涟漪环（覆盖在圆点上）
-        if (breathingRing == null) {
-            val parent = dotIndicator.parent as? LinearLayout ?: return
-            breathingRing = View(this).apply {
-                layoutParams = LinearLayout.LayoutParams(24, 24).apply {
-                    gravity = android.view.Gravity.CENTER_VERTICAL
-                }
-                background = android.graphics.drawable.GradientDrawable().apply {
-                    shape = android.graphics.drawable.GradientDrawable.OVAL
-                    setColor(android.graphics.Color.TRANSPARENT)
-                    setStroke(3, color)
-                }
-                // 定位到圆点位置
-                val dotIndex = parent.indexOfChild(dotIndicator)
-                parent.addView(this, dotIndex)
-            }
-        }
-
-        // 动画：缩放+透明度
-        breathingAnimator = ValueAnimator.ofFloat(1f, 2.5f).apply {
-            duration = 1500
+        // 动画：缩放（涟漪效果）
+        breathingAnimator = ValueAnimator.ofFloat(1f, 1.8f).apply {
+            duration = 1200
             repeatCount = ValueAnimator.INFINITE
             repeatMode = ValueAnimator.REVERSE
             addUpdateListener { animator ->
                 val scale = animator.animatedValue as Float
-                breathingRing?.apply {
-                    scaleX = scale
-                    scaleY = scale
-                    alpha = 1f - (scale - 1f) / 1.5f
-                }
+                dotIndicator.scaleX = scale
+                dotIndicator.scaleY = scale
+                dotIndicator.alpha = 1f - (scale - 1f) / 0.8f * 0.6f
             }
             start()
         }
@@ -341,11 +320,9 @@ class MainActivity : AppCompatActivity() {
     private fun stopBreathingAnimation() {
         breathingAnimator?.cancel()
         breathingAnimator = null
-        breathingRing?.apply {
-            scaleX = 1f
-            scaleY = 1f
-            alpha = 0f
-        }
+        dotIndicator.scaleX = 1f
+        dotIndicator.scaleY = 1f
+        dotIndicator.alpha = 1f
     }
 
     private fun getResolutionFromPrefs(): Size {
