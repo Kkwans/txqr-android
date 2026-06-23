@@ -5,7 +5,6 @@
     android:orientation="vertical"
     android:background="#F5F5F5">
 
-    <!-- 标题栏 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="52dp"
@@ -47,7 +46,7 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- 卡片：文件保存 -->
+            <!-- 文件保存 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -87,9 +86,9 @@
                         android:textSize="15sp" />
 
                     <TextView
+                        android:id="@+id/tvSaveDir"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:id="@+id/tvSaveDir"
                         android:text="/Download/TXQR"
                         android:textColor="#9E9E9E"
                         android:textSize="13sp"
@@ -117,7 +116,7 @@
                     android:textColor="#1976D2" />
             </LinearLayout>
 
-            <!-- 卡片：扫描设置 -->
+            <!-- 扫描设置 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -137,135 +136,108 @@
                     android:letterSpacing="0.08"
                     android:layout_marginBottom="12dp" />
 
-                <!-- 仅扫描QR码 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:padding="14dp">
+                    android:paddingVertical="12dp">
 
-                    <LinearLayout
+                    <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:text="仅扫描 QR 码"
+                        android:textColor="#212121"
+                        android:textSize="15sp" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="仅扫描 QR 码"
-                            android:textColor="#212121"
-                            android:textSize="15sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="只识别QR码格式，忽略其他条形码，可提升识别速度"
-                            android:textColor="#9E9E9E"
-                            android:textSize="12sp"
-                            android:layout_marginTop="2dp" />
-                    </LinearLayout>
+                    <ImageButton
+                        android:id="@+id/btnHelpQrOnly"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_help"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:scaleType="center"
+                        android:contentDescription="帮助"
+                        android:layout_marginEnd="8dp" />
 
                     <Switch
                         android:id="@+id/switchQrOnly"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:checked="true"
-                        android:thumb="@drawable/switch_thumb"
-                        android:track="@drawable/switch_track_selector" />
+                        android:checked="true" />
                 </LinearLayout>
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="#F0F0F0" />
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" />
 
-                <!-- 连续自动对焦 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:padding="14dp">
+                    android:paddingVertical="12dp">
 
-                    <LinearLayout
+                    <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:text="连续自动对焦"
+                        android:textColor="#212121"
+                        android:textSize="15sp" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="连续自动对焦"
-                            android:textColor="#212121"
-                            android:textSize="15sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="相机持续自动对焦，确保二维码始终清晰"
-                            android:textColor="#9E9E9E"
-                            android:textSize="12sp"
-                            android:layout_marginTop="2dp" />
-                    </LinearLayout>
+                    <ImageButton
+                        android:id="@+id/btnHelpAutoFocus"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_help"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:scaleType="center"
+                        android:contentDescription="帮助"
+                        android:layout_marginEnd="8dp" />
 
                     <Switch
                         android:id="@+id/switchAutoFocus"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:checked="true"
-                        android:thumb="@drawable/switch_thumb"
-                        android:track="@drawable/switch_track_selector" />
+                        android:checked="true" />
                 </LinearLayout>
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="#F0F0F0" />
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" />
 
-                <!-- 扫描区域提示 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:padding="14dp">
+                    android:paddingVertical="12dp">
 
-                    <LinearLayout
+                    <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:text="扫描区域提示"
+                        android:textColor="#212121"
+                        android:textSize="15sp" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="扫描区域提示"
-                            android:textColor="#212121"
-                            android:textSize="15sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="在画面中央显示扫描参考框"
-                            android:textColor="#9E9E9E"
-                            android:textSize="12sp"
-                            android:layout_marginTop="2dp" />
-                    </LinearLayout>
+                    <ImageButton
+                        android:id="@+id/btnHelpOverlay"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_help"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:scaleType="center"
+                        android:contentDescription="帮助"
+                        android:layout_marginEnd="8dp" />
 
                     <Switch
                         android:id="@+id/switchShowOverlay"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:checked="true"
-                        android:thumb="@drawable/switch_thumb"
-                        android:track="@drawable/switch_track_selector" />
+                        android:checked="true" />
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- 卡片：性能设置 -->
+            <!-- 性能设置 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -285,17 +257,15 @@
                     android:letterSpacing="0.08"
                     android:layout_marginBottom="12dp" />
 
-                <!-- 分辨率选择 -->
                 <LinearLayout
                     android:id="@+id/resolutionRow"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:padding="14dp"
+                    android:paddingVertical="12dp"
                     android:clickable="true"
-                    android:focusable="true"
-                    android:background="@drawable/bg_card_input">
+                    android:focusable="true">
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -309,15 +279,17 @@
                             android:text="分析分辨率"
                             android:textColor="#212121"
                             android:textSize="15sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="低分辨率识别更快，高分辨率更准确"
-                            android:textColor="#9E9E9E"
-                            android:textSize="12sp"
-                            android:layout_marginTop="2dp" />
                     </LinearLayout>
+
+                    <ImageButton
+                        android:id="@+id/btnHelpResolution"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_help"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:scaleType="center"
+                        android:contentDescription="帮助"
+                        android:layout_marginEnd="8dp" />
 
                     <TextView
                         android:id="@+id/tvResolution"
@@ -336,96 +308,76 @@
                         android:gravity="center" />
                 </LinearLayout>
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="#F0F0F0" />
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" />
 
-                <!-- 始终显示进度卡片 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:padding="14dp">
+                    android:paddingVertical="12dp">
 
-                    <LinearLayout
+                    <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:text="始终显示进度卡片"
+                        android:textColor="#212121"
+                        android:textSize="15sp" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="始终显示进度卡片"
-                            android:textColor="#212121"
-                            android:textSize="15sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="进入软件即显示进度卡片，点击按钮开始扫描"
-                            android:textColor="#9E9E9E"
-                            android:textSize="12sp"
-                            android:layout_marginTop="2dp" />
-                    </LinearLayout>
+                    <ImageButton
+                        android:id="@+id/btnHelpAlwaysShow"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_help"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:scaleType="center"
+                        android:contentDescription="帮助"
+                        android:layout_marginEnd="8dp" />
 
                     <Switch
                         android:id="@+id/switchAlwaysShowProgress"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:checked="false"
-                        android:thumb="@drawable/switch_thumb"
-                        android:track="@drawable/switch_track_selector" />
+                        android:checked="false" />
                 </LinearLayout>
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="#F0F0F0" />
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" />
 
-                <!-- 显示进度卡片 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:padding="14dp">
+                    android:paddingVertical="12dp">
 
-                    <LinearLayout
+                    <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:text="解码时显示进度卡片"
+                        android:textColor="#212121"
+                        android:textSize="15sp" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="解码时显示进度卡片"
-                            android:textColor="#212121"
-                            android:textSize="15sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="扫描到二维码后显示详细的解码进度"
-                            android:textColor="#9E9E9E"
-                            android:textSize="12sp"
-                            android:layout_marginTop="2dp" />
-                    </LinearLayout>
+                    <ImageButton
+                        android:id="@+id/btnHelpProgress"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_help"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:scaleType="center"
+                        android:contentDescription="帮助"
+                        android:layout_marginEnd="8dp" />
 
                     <Switch
                         android:id="@+id/switchShowProgress"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:checked="true"
-                        android:thumb="@drawable/switch_thumb"
-                        android:track="@drawable/switch_track_selector" />
+                        android:checked="true" />
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- 卡片：关于 -->
+            <!-- 关于 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -463,7 +415,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="v3.5.0 · 离线二维码文件传输"
+                        android:text="v3.6.0 · 离线二维码文件传输"
                         android:textColor="#9E9E9E"
                         android:textSize="12sp"
                         android:layout_marginTop="4dp" />

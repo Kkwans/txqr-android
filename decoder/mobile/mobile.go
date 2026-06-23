@@ -12,14 +12,15 @@ import (
 
 // Decoder implements txqr protocol decoder for gomobile.
 type Decoder struct {
-	chunkLen   int
-	codec      fountain.Codec
-	fd         fountain.Decoder
-	completed  bool
-	total      int
-	cache      map[string]struct{}
-	dataBytes  []byte
-	frameCount int
+	chunkLen      int
+	codec         fountain.Codec
+	fd            fountain.Decoder
+	completed     bool
+	total         int
+	cache         map[string]struct{}
+	dataBytes     []byte
+	frameCount    int
+	decodedChunks int // chunks the fountain decoder actually used
 }
 
 // NewDecoder creates a new txqr decoder.
@@ -70,14 +71,11 @@ func (d *Decoder) DecodeChunk(chunk string) error {
 	if d.completed {
 		decoded := d.fd.Decode()
 		decodedStr := string(decoded)
-		// txqr-gif: file -> base64.StdEncoding -> fountain codes
-		// 解码后应为 base64 字符串，需要 base64 解码得到原始文件
 		raw, err := base64.StdEncoding.DecodeString(decodedStr)
 		if err != nil {
 			raw, err = base64.RawStdEncoding.DecodeString(decodedStr)
 		}
 		if err != nil {
-			// base64 解码失败，返回原始数据
 			d.dataBytes = decoded
 		} else {
 			d.dataBytes = raw
@@ -94,8 +92,7 @@ func (d *Decoder) IsCompleted() bool { return d.completed }
 func (d *Decoder) DataBytes() []byte { return d.dataBytes }
 
 // Progress returns decoding progress (0-100).
-// During decoding: estimates based on received frames vs estimated total (with 1.4x redundancy).
-// Completed: returns 100.
+// Uses frameCount / minChunks ratio, capped at 95 until complete.
 func (d *Decoder) Progress() int {
 	if d.completed {
 		return 100
@@ -107,12 +104,9 @@ func (d *Decoder) Progress() int {
 	if minChunks == 0 {
 		return 0
 	}
-	// Use 1.3x as estimated total (fountain codes typically need ~1.1-1.5x)
-	estimatedTotal := minChunks * 13 / 10
-	if estimatedTotal < minChunks {
-		estimatedTotal = minChunks
-	}
-	p := d.frameCount * 100 / estimatedTotal
+	// Progress = unique frames received / minimum chunks needed
+	// Cap at 95% since fountain codes need some extra frames
+	p := d.frameCount * 95 / minChunks
 	if p > 95 {
 		p = 95
 	}
@@ -125,7 +119,7 @@ func (d *Decoder) TotalSize() int { return d.total }
 // ChunkLen returns the chunk length in bytes.
 func (d *Decoder) ChunkLen() int { return d.chunkLen }
 
-// TotalFrames returns the real total frames (data size / chunk length).
+// TotalFrames returns the minimum number of chunks needed.
 func (d *Decoder) TotalFrames() int {
 	if d.chunkLen == 0 {
 		return 0
@@ -146,6 +140,7 @@ func (d *Decoder) Reset() {
 	d.codec = nil
 	d.dataBytes = nil
 	d.frameCount = 0
+	d.decodedChunks = 0
 }
 
 func (d *Decoder) validate(chunk string) error {

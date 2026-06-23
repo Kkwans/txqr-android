@@ -5,13 +5,11 @@
     android:background="#00000000"
     android:fitsSystemWindows="false">
 
-    <!-- 相机预览 -->
     <androidx.camera.view.PreviewView
         android:id="@+id/previewView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- 叠加层 -->
     <com.txqr.reader.OverlayView
         android:id="@+id/overlayView"
         android:layout_width="match_parent"
@@ -58,13 +56,13 @@
             android:contentDescription="设置" />
     </LinearLayout>
 
-    <!-- 底部提示（双指缩放+点击对焦） -->
+    <!-- 提示框（顶部标题下方） -->
     <TextView
         android:id="@+id/hintText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="12dp"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="58dp"
         android:text="💡 双指缩放 · 点击对焦"
         android:textColor="#CCFFFFFF"
         android:textSize="12sp"
@@ -72,7 +70,7 @@
         android:paddingHorizontal="14dp"
         android:paddingVertical="6dp" />
 
-    <!-- 进度信息卡片（底部） -->
+    <!-- 进度卡片（底部） -->
     <LinearLayout
         android:id="@+id/progressCard"
         android:layout_width="match_parent"
@@ -81,12 +79,11 @@
         android:layout_marginHorizontal="12dp"
         android:layout_marginBottom="24dp"
         android:orientation="vertical"
-        android:background="@drawable/bg_card_blur"
+        android:background="#EE1A1A2E"
         android:padding="16dp"
         android:elevation="8dp"
         android:visibility="gone">
 
-        <!-- 进度标题 + 文件信息 -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -119,7 +116,6 @@
                 android:textSize="12sp" />
         </LinearLayout>
 
-        <!-- 渐变进度条 -->
         <ProgressBar
             android:id="@+id/progressBar"
             style="@android:style/Widget.ProgressBar.Horizontal"
@@ -131,7 +127,6 @@
             android:layout_marginTop="10dp"
             android:layout_marginBottom="12dp" />
 
-        <!-- 进度百分比 + 帧数 -->
         <TextView
             android:id="@+id/progressPercent"
             android:layout_width="match_parent"
@@ -142,7 +137,6 @@
             android:textStyle="bold"
             android:layout_marginBottom="8dp" />
 
-        <!-- 解码器状态 -->
         <TextView
             android:id="@+id/decoderStatus"
             android:layout_width="match_parent"
@@ -152,17 +146,15 @@
             android:textSize="12sp"
             android:layout_marginBottom="4dp" />
 
-        <!-- 诊断信息 -->
         <TextView
             android:id="@+id/diagnosticInfo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="诊断: 0 新帧 | 0 重复 | 0% 唯一"
+            android:text="诊断: 0 新帧 | 0 重复"
             android:textColor="#66FFFFFF"
             android:textSize="11sp"
             android:layout_marginBottom="14dp" />
 
-        <!-- 开始扫描按钮（仅在始终显示模式下可见） -->
         <Button
             android:id="@+id/btnStartScan"
             android:layout_width="wrap_content"
@@ -176,7 +168,6 @@
             android:visibility="gone"
             android:layout_marginBottom="8dp" />
 
-        <!-- 重新开始 / 暂停按钮 -->
         <LinearLayout
             android:id="@+id/scanButtons"
             android:layout_width="match_parent"
@@ -201,20 +192,20 @@
                 android:layout_weight="1"
                 android:text="暂停扫描"
                 android:textSize="13sp"
-                android:backgroundTint="#66FF5252"
-                android:textColor="#FF5252"
+                android:backgroundTint="#66EF9A9A"
+                android:textColor="#C62828"
                 android:layout_marginStart="6dp" />
         </LinearLayout>
     </LinearLayout>
 
-    <!-- 结果面板（底部） -->
+    <!-- 结果面板 -->
     <LinearLayout
         android:id="@+id/resultPanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:orientation="vertical"
-        android:background="@drawable/bg_card_blur"
+        android:background="#EE1A1A2E"
         android:padding="20dp"
         android:layout_marginHorizontal="12dp"
         android:layout_marginBottom="24dp"
