@@ -15,11 +15,8 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
-import android.view.ViewGroup
 import android.graphics.drawable.AnimationDrawable
-import android.animation.ValueAnimator
 import android.widget.Button
-import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.ProgressBar
@@ -88,7 +85,6 @@ class MainActivity : AppCompatActivity() {
     private var currentCamera: Camera? = null
     private lateinit var scaleDetector: ScaleGestureDetector
     private lateinit var gestureDetector: GestureDetector
-    private var breathingAnimator: android.animation.ValueAnimator? = null
 
     private val prefs by lazy { getSharedPreferences("txqr", MODE_PRIVATE) }
 
@@ -298,31 +294,17 @@ class MainActivity : AppCompatActivity() {
 
     private fun startBreathingAnimation(color: Int) {
         stopBreathingAnimation()
-        // 设置圆点颜色
-        dotIndicator.setBackgroundResource(R.drawable.dot_waiting)
-        (dotIndicator.background as? android.graphics.drawable.GradientDrawable)?.setColor(color)
-
-        // 动画：缩放（涟漪效果）
-        breathingAnimator = ValueAnimator.ofFloat(1f, 1.8f).apply {
-            duration = 1200
-            repeatCount = ValueAnimator.INFINITE
-            repeatMode = ValueAnimator.REVERSE
-            addUpdateListener { animator ->
-                val scale = animator.animatedValue as Float
-                dotIndicator.scaleX = scale
-                dotIndicator.scaleY = scale
-                dotIndicator.alpha = 1f - (scale - 1f) / 0.8f * 0.6f
-            }
-            start()
+        // 使用drawable逐帧动画
+        if (color == Color.parseColor("#4CAF50")) {
+            dotIndicator.setBackgroundResource(R.drawable.dot_breathing_scanning)
+        } else {
+            dotIndicator.setBackgroundResource(R.drawable.dot_breathing)
         }
+        (dotIndicator.background as? AnimationDrawable)?.start()
     }
 
     private fun stopBreathingAnimation() {
-        breathingAnimator?.cancel()
-        breathingAnimator = null
-        dotIndicator.scaleX = 1f
-        dotIndicator.scaleY = 1f
-        dotIndicator.alpha = 1f
+        (dotIndicator.background as? AnimationDrawable)?.stop()
     }
 
     private fun getResolutionFromPrefs(): Size {
@@ -444,7 +426,7 @@ class MainActivity : AppCompatActivity() {
         statusText.text = "⏳ $progress% | $unique/$total 帧"
 
         // 确保呼吸动画在运行（解码中用青色）
-        if (breathingAnimator == null || !breathingAnimator!!.isRunning) {
+        if (dotIndicator.background == null || dotIndicator.background !is AnimationDrawable || !(dotIndicator.background as AnimationDrawable).isRunning) {
             startBreathingAnimation(Color.parseColor("#5EFAEB"))
         }
 
