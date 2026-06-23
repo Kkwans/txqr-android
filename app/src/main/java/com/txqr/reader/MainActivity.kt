@@ -75,6 +75,7 @@ class MainActivity : AppCompatActivity() {
     private var isStopped = false
     private var isPaused = false
     private var isScanning = false
+    private var isDecoding = false  // 是否已开始解码（扫描到二维码）
 
     private var totalFramesProcessed = 0
     private var newFrames = 0
@@ -169,17 +170,19 @@ class MainActivity : AppCompatActivity() {
         val alwaysShow = prefs.getBoolean("always_show_progress", true)
         val showProgress = prefs.getBoolean("show_progress", true)
 
-        if (!isScanning) {
-            // 非解码中状态 → 是否展示取决于“始终显示进度卡片”
+        if (!isDecoding) {
+            // 非解码中状态（等待扫描、正在扫描但未扫到） → 是否展示取决于“始终显示进度卡片”
             if (alwaysShow && !decoder.isCompleted()) {
                 showProgressCardWaiting()
             } else {
                 progressCard.visibility = View.GONE
             }
         } else {
-            // 解码中状态 → 是否展示取决于“解码时显示进度卡片”
+            // 解码中状态（已扫描到二维码） → 是否展示取决于“解码时显示进度卡片”
             if (!showProgress) {
                 progressCard.visibility = View.GONE
+            } else {
+                progressCard.visibility = View.VISIBLE
             }
         }
 
@@ -218,7 +221,7 @@ class MainActivity : AppCompatActivity() {
         fileInfo.text = ""
         btnStartScan.visibility = View.VISIBLE
         scanButtons.visibility = View.GONE
-        dotIndicator.setBackgroundResource(R.drawable.dot_indicator)
+        dotIndicator.setBackgroundResource(R.drawable.dot_waiting)
         updateScanAreaOffset()
     }
 
@@ -235,7 +238,7 @@ class MainActivity : AppCompatActivity() {
         diagnosticInfo.text = "诊断: 0 新帧 | 0 重复"
         fileInfo.text = ""
         statusText.text = "扫描中..."
-        dotIndicator.setBackgroundResource(R.drawable.dot_breathing)
+        dotIndicator.setBackgroundResource(R.drawable.dot_breathing_scanning)
         (dotIndicator.background as? AnimationDrawable)?.start()
         updateScanAreaOffset()
     }
@@ -254,9 +257,15 @@ class MainActivity : AppCompatActivity() {
             btnStop.text = "暂停扫描"
             btnStop.setBackgroundResource(R.drawable.btn_red)
             statusText.text = "扫描中..."
-            progressTitle.text = "  正在解码"
-            dotIndicator.setBackgroundResource(R.drawable.dot_breathing)
-            (dotIndicator.background as? AnimationDrawable)?.start()
+            if (isDecoding) {
+                progressTitle.text = "  正在解码"
+                dotIndicator.setBackgroundResource(R.drawable.dot_breathing)
+                (dotIndicator.background as? AnimationDrawable)?.start()
+            } else {
+                progressTitle.text = "  正在扫描"
+                dotIndicator.setBackgroundResource(R.drawable.dot_breathing_scanning)
+                (dotIndicator.background as? AnimationDrawable)?.start()
+            }
         }
     }
 
@@ -353,6 +362,7 @@ class MainActivity : AppCompatActivity() {
     private fun onQRCodeDetected(content: String) {
         if (decoder.isCompleted() || isStopped) return
         if (!isProcessing.compareAndSet(false, true)) return
+        isDecoding = true  // 标记已开始解码
         try {
             val prev = decoder.uniqueFrames().toInt()
             decoder.decodeChunk(content)
@@ -401,7 +411,7 @@ class MainActivity : AppCompatActivity() {
         diagnosticInfo.text = "诊断: ${newFrames} 新帧 | ${duplicateFrames} 重复"
         statusText.text = "⏳ $progress% | $unique/$total 帧"
 
-        // 确保呼吸动画在运行
+        // 确保呼吸动画在运行（解码中用青色）
         if (dotIndicator.background !is AnimationDrawable || !(dotIndicator.background as AnimationDrawable).isRunning) {
             dotIndicator.setBackgroundResource(R.drawable.dot_breathing)
             (dotIndicator.background as? AnimationDrawable)?.start()
@@ -518,7 +528,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun resetForNext() {
-        decoder.reset(); isStopped = false; isPaused = false; isScanning = false
+        decoder.reset(); isStopped = false; isPaused = false; isScanning = false; isDecoding = false
         totalFramesProcessed = 0; newFrames = 0; duplicateFrames = 0; uniqueFrames = 0
         resultPanel.visibility = View.GONE; overlayView.clear(); lastSavedFile = null
         if (prefs.getBoolean("always_show_progress", true)) showProgressCardWaiting()

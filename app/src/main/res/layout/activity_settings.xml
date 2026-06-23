@@ -162,12 +162,13 @@
 
                         <TextView
                             android:id="@+id/btnHelpQrOnly"
-                            android:layout_width="14dp"
-                            android:layout_height="14dp"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
                             android:text="?"
                             android:textColor="#BDBDBD"
                             android:textSize="12sp"
                             android:gravity="center"
+                            android:background="@drawable/bg_help_circle"
                             
                             android:layout_marginStart="4dp" />
                     </LinearLayout>
@@ -207,12 +208,13 @@
 
                         <TextView
                             android:id="@+id/btnHelpAutoFocus"
-                            android:layout_width="14dp"
-                            android:layout_height="14dp"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
                             android:text="?"
                             android:textColor="#BDBDBD"
                             android:textSize="12sp"
                             android:gravity="center"
+                            android:background="@drawable/bg_help_circle"
                             
                             android:layout_marginStart="4dp" />
                     </LinearLayout>
@@ -252,12 +254,13 @@
 
                         <TextView
                             android:id="@+id/btnHelpOverlay"
-                            android:layout_width="14dp"
-                            android:layout_height="14dp"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
                             android:text="?"
                             android:textColor="#BDBDBD"
                             android:textSize="12sp"
                             android:gravity="center"
+                            android:background="@drawable/bg_help_circle"
                             
                             android:layout_marginStart="4dp" />
                     </LinearLayout>
@@ -319,33 +322,25 @@
 
                         <TextView
                             android:id="@+id/btnHelpResolution"
-                            android:layout_width="14dp"
-                            android:layout_height="14dp"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
                             android:text="?"
                             android:textColor="#BDBDBD"
                             android:textSize="12sp"
                             android:gravity="center"
+                            android:background="@drawable/bg_help_circle"
                             
                             android:layout_marginStart="4dp" />
                     </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/tvResolution"
+                    <Spinner
+                        android:id="@+id/spinnerResolution"
                         android:layout_width="wrap_content"
-                        android:layout_height="48dp"
-                        android:gravity="center_vertical"
-                        android:text="640×480"
-                        android:textColor="#1976D2"
-                        android:textSize="14sp"
-                        android:layout_marginEnd="4dp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="48dp"
-                        android:gravity="center_vertical"
-                        android:text="›"
-                        android:textColor="#BDBDBD"
-                        android:textSize="20sp" />
+                        android:layout_height="40dp"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/bg_spinner"
+                        android:popupBackground="#FFFFFF"
+                        android:dropDownWidth="wrap_content" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -395,12 +390,13 @@
 
                         <TextView
                             android:id="@+id/btnHelpAlwaysShow"
-                            android:layout_width="14dp"
-                            android:layout_height="14dp"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
                             android:text="?"
                             android:textColor="#BDBDBD"
                             android:textSize="12sp"
                             android:gravity="center"
+                            android:background="@drawable/bg_help_circle"
                             
                             android:layout_marginStart="4dp" />
                     </LinearLayout>
@@ -440,12 +436,13 @@
 
                         <TextView
                             android:id="@+id/btnHelpProgress"
-                            android:layout_width="14dp"
-                            android:layout_height="14dp"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
                             android:text="?"
                             android:textColor="#BDBDBD"
                             android:textSize="12sp"
                             android:gravity="center"
+                            android:background="@drawable/bg_help_circle"
                             
                             android:layout_marginStart="4dp" />
                     </LinearLayout>
@@ -483,6 +480,7 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:gravity="center"
+                            android:background="@drawable/bg_help_circle"
                     android:padding="12dp">
 
                     <TextView
@@ -496,7 +494,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="v3.11.0 · 离线二维码文件传输"
+                        android:text="v3.12.0 · 离线二维码文件传输"
                         android:textColor="#9E9E9E"
                         android:textSize="12sp"
                         android:layout_marginTop="4dp" />

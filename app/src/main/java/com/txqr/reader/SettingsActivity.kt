@@ -10,6 +10,8 @@ import android.provider.DocumentsContract
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.LinearLayout
+import android.widget.Spinner
+import android.widget.ArrayAdapter
 import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
@@ -21,7 +23,7 @@ class SettingsActivity : AppCompatActivity() {
 
     private lateinit var prefs: SharedPreferences
     private lateinit var tvSaveDir: TextView
-    private lateinit var tvResolution: TextView
+    private lateinit var spinnerResolution: Spinner
     private lateinit var switchShowProgress: Switch
     private lateinit var switchAlwaysShow: Switch
 
@@ -46,7 +48,7 @@ class SettingsActivity : AppCompatActivity() {
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
 
         tvSaveDir = findViewById(R.id.tvSaveDir)
-        tvResolution = findViewById(R.id.tvResolution)
+        spinnerResolution = findViewById(R.id.spinnerResolution)
 
         val switchQrOnly = findViewById<Switch>(R.id.switchQrOnly)
         val switchAutoFocus = findViewById<Switch>(R.id.switchAutoFocus)
@@ -54,7 +56,20 @@ class SettingsActivity : AppCompatActivity() {
         switchShowProgress = findViewById(R.id.switchShowProgress)
         switchAlwaysShow = findViewById(R.id.switchAlwaysShowProgress)
 
-        updateDirDisplay(); updateResolutionDisplay()
+        // 设置分辨率下拉框
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, RESOLUTION_LABELS)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerResolution.adapter = adapter
+        val currentIdx = RESOLUTION_VALUES.indexOf(prefs.getString(KEY_RESOLUTION, "640x480") ?: "640x480").coerceAtLeast(0)
+        spinnerResolution.setSelection(currentIdx)
+        spinnerResolution.setOnItemSelectedListener(object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
+                prefs.edit().putString(KEY_RESOLUTION, RESOLUTION_VALUES[position]).apply()
+            }
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+        })
+
+        updateDirDisplay()
 
         switchQrOnly.isChecked = prefs.getBoolean(KEY_QR_ONLY, true)
         switchAutoFocus.isChecked = prefs.getBoolean(KEY_AUTO_FOCUS, true)
@@ -97,7 +112,6 @@ class SettingsActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.tvAlwaysShowLabel).setOnClickListener { showHelp("始终显示进度卡片", "进入软件即显示进度卡片，点击「开始扫描」按钮才开始扫描。\n\n开启后「解码时显示进度卡片」将自动启用。") }
         findViewById<TextView>(R.id.tvResolutionLabel).setOnClickListener { showHelp("分析分辨率", "相机分析二维码的分辨率。\n\n• 480p: 最快，适合近距离\n• 720p: 均衡\n• 1080p: 最准，适合远距离\n• 1440p: 超清，耗电更多") }
 
-        findViewById<LinearLayout>(R.id.resolutionRow).setOnClickListener { showResolutionPicker() }
         findViewById<Button>(R.id.btnOpenSaveDir).setOnClickListener { openSavedDir() }
         findViewById<LinearLayout>(R.id.saveDirRow).setOnClickListener { chooseDirectory() }
         findViewById<ImageButton>(R.id.btnBack).setOnClickListener { finish() }
@@ -125,24 +139,6 @@ class SettingsActivity : AppCompatActivity() {
             .setMessage(message)
             .setPositiveButton("知道了", null)
             .show()
-    }
-
-    private fun showResolutionPicker() {
-        val idx = RESOLUTION_VALUES.indexOf(prefs.getString(KEY_RESOLUTION, "640x480") ?: "640x480").coerceAtLeast(0)
-        AlertDialog.Builder(this, R.style.RoundedDialog)
-            .setTitle("分析分辨率")
-            .setSingleChoiceItems(RESOLUTION_LABELS, idx) { d, w ->
-                prefs.edit().putString(KEY_RESOLUTION, RESOLUTION_VALUES[w]).apply()
-                updateResolutionDisplay()
-                d.dismiss()
-            }
-            .setNegativeButton("取消", null)
-            .show()
-    }
-
-    private fun updateResolutionDisplay() {
-        val idx = RESOLUTION_VALUES.indexOf(prefs.getString(KEY_RESOLUTION, "640x480") ?: "640x480").coerceAtLeast(0)
-        tvResolution.text = RESOLUTION_LABELS[idx]
     }
 
     private fun updateDirDisplay() {
