@@ -162,10 +162,21 @@ class MainActivity : AppCompatActivity() {
     private fun applySettings() {
         overlayView.setScanAreaVisible(prefs.getBoolean("show_overlay", true))
 
-        val alwaysShow = prefs.getBoolean("always_show_progress", false)
+        val alwaysShow = prefs.getBoolean("always_show_progress", true)
         if (alwaysShow && !isScanning && !decoder.isCompleted()) {
             showProgressCardWaiting()
         }
+
+        // 进度卡片显示时，扫描区域上移 120dp
+        updateScanAreaOffset()
+    }
+
+    private fun updateScanAreaOffset() {
+        val showP = prefs.getBoolean("show_progress", true)
+        val always = prefs.getBoolean("always_show_progress", true)
+        val cardVisible = (showP || always) && progressCard.visibility == View.VISIBLE
+        val offsetPx = if (cardVisible) 120f * resources.displayMetrics.density else 0f
+        overlayView.setScanAreaOffset(offsetPx)
     }
 
     private fun setupImmersiveMode() {
@@ -192,6 +203,7 @@ class MainActivity : AppCompatActivity() {
         fileInfo.text = ""
         btnStartScan.visibility = View.VISIBLE
         scanButtons.visibility = View.GONE
+        updateScanAreaOffset()
     }
 
     private fun startScanningFromButton() {
@@ -207,6 +219,7 @@ class MainActivity : AppCompatActivity() {
         diagnosticInfo.text = "诊断: 0 新帧 | 0 重复"
         fileInfo.text = ""
         statusText.text = "扫描中..."
+        updateScanAreaOffset()
     }
 
     private fun togglePause() {
@@ -368,6 +381,7 @@ class MainActivity : AppCompatActivity() {
         decoderStatus.text = "解码器: 工作中 | 摄像头: ${if (currentCamera != null) "正常" else "未连接"}"
         diagnosticInfo.text = "诊断: ${newFrames} 新帧 | ${duplicateFrames} 重复"
         statusText.text = "⏳ $progress% | $unique/$total 帧"
+        updateScanAreaOffset()
     }
 
     private fun formatSize(bytes: Long): String = when {
@@ -481,8 +495,8 @@ class MainActivity : AppCompatActivity() {
         decoder.reset(); isStopped = false; isPaused = false; isScanning = false
         totalFramesProcessed = 0; newFrames = 0; duplicateFrames = 0; uniqueFrames = 0
         resultPanel.visibility = View.GONE; overlayView.clear(); lastSavedFile = null
-        if (prefs.getBoolean("always_show_progress", false)) showProgressCardWaiting()
-        else progressCard.visibility = View.GONE
+        if (prefs.getBoolean("always_show_progress", true)) showProgressCardWaiting()
+        else { progressCard.visibility = View.GONE; updateScanAreaOffset() }
         statusText.text = "将摄像头对准二维码动画"; frameCountText.text = ""
         btnStop.text = "暂停扫描"; btnStop.setTextColor(Color.parseColor("#EF5350"))
         btnStop.backgroundTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#66EF9A9A"))

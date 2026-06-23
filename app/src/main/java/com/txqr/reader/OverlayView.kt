@@ -18,6 +18,7 @@ class OverlayView @JvmOverloads constructor(
     private var lastDetectTime = 0L
     private val DETECT_HOLD_MS = 300L
     private var scanAreaVisible = true
+    private var scanAreaOffsetY = 0f  // 进度卡片显示时，扫描区域上移量
 
     private val focusPaint = Paint().apply {
         color = Color.WHITE
@@ -28,6 +29,11 @@ class OverlayView @JvmOverloads constructor(
 
     fun setScanAreaVisible(visible: Boolean) {
         scanAreaVisible = visible
+        invalidate()
+    }
+
+    fun setScanAreaOffset(offsetY: Float) {
+        scanAreaOffsetY = offsetY
         invalidate()
     }
 
@@ -69,7 +75,7 @@ class OverlayView @JvmOverloads constructor(
 
     private fun drawScanArea(canvas: Canvas) {
         val cw = width.toFloat() / 2f
-        val ch = height.toFloat() / 2f
+        val ch = height.toFloat() / 2f - scanAreaOffsetY  // 上移
         val size = minOf(width, height).toFloat() * 0.65f
         val l = cw - size / 2f; val t = ch - size / 2f; val r = l + size; val b = t + size
 

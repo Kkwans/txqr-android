@@ -134,15 +134,14 @@
                     android:textSize="12sp"
                     android:textStyle="bold"
                     android:letterSpacing="0.08"
-                    android:layout_marginBottom="12dp" />
+                    android:layout_marginBottom="4dp" />
 
                 <!-- 仅扫描 QR 码 -->
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="48dp"
                     android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingVertical="12dp">
+                    android:gravity="center_vertical">
 
                     <TextView
                         android:layout_width="0dp"
@@ -154,21 +153,22 @@
 
                     <TextView
                         android:id="@+id/btnHelpQrOnly"
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
                         android:text="?"
-                        android:textColor="#9E9E9E"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
+                        android:textColor="#BDBDBD"
+                        android:textSize="11sp"
                         android:gravity="center"
                         android:background="@drawable/bg_help_circle"
-                        android:layout_marginEnd="10dp" />
+                        android:layout_marginEnd="12dp" />
 
                     <Switch
                         android:id="@+id/switchQrOnly"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:checked="true" />
+                        android:checked="true"
+                        android:track="@drawable/switch_track_selector"
+                        android:thumb="@drawable/switch_thumb" />
                 </LinearLayout>
 
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" />
@@ -176,10 +176,9 @@
                 <!-- 连续自动对焦 -->
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="48dp"
                     android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingVertical="12dp">
+                    android:gravity="center_vertical">
 
                     <TextView
                         android:layout_width="0dp"
@@ -191,21 +190,22 @@
 
                     <TextView
                         android:id="@+id/btnHelpAutoFocus"
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
                         android:text="?"
-                        android:textColor="#9E9E9E"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
+                        android:textColor="#BDBDBD"
+                        android:textSize="11sp"
                         android:gravity="center"
                         android:background="@drawable/bg_help_circle"
-                        android:layout_marginEnd="10dp" />
+                        android:layout_marginEnd="12dp" />
 
                     <Switch
                         android:id="@+id/switchAutoFocus"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:checked="true" />
+                        android:checked="true"
+                        android:track="@drawable/switch_track_selector"
+                        android:thumb="@drawable/switch_thumb" />
                 </LinearLayout>
 
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" />
@@ -213,10 +213,9 @@
                 <!-- 扫描区域提示 -->
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="48dp"
                     android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingVertical="12dp">
+                    android:gravity="center_vertical">
 
                     <TextView
                         android:layout_width="0dp"
@@ -228,21 +227,22 @@
 
                     <TextView
                         android:id="@+id/btnHelpOverlay"
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
                         android:text="?"
-                        android:textColor="#9E9E9E"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
+                        android:textColor="#BDBDBD"
+                        android:textSize="11sp"
                         android:gravity="center"
                         android:background="@drawable/bg_help_circle"
-                        android:layout_marginEnd="10dp" />
+                        android:layout_marginEnd="12dp" />
 
                     <Switch
                         android:id="@+id/switchShowOverlay"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:checked="true" />
+                        android:checked="true"
+                        android:track="@drawable/switch_track_selector"
+                        android:thumb="@drawable/switch_thumb" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -264,9 +264,9 @@
                     android:textSize="12sp"
                     android:textStyle="bold"
                     android:letterSpacing="0.08"
-                    android:layout_marginBottom="12dp" />
+                    android:layout_marginBottom="4dp" />
 
-                <!-- 分析分辨率 -->
+                <!-- 分析分辨率（独立行，不和开关混在一起） -->
                 <LinearLayout
                     android:id="@+id/resolutionRow"
                     android:layout_width="match_parent"
@@ -286,15 +286,14 @@
 
                     <TextView
                         android:id="@+id/btnHelpResolution"
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
                         android:text="?"
-                        android:textColor="#9E9E9E"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
+                        android:textColor="#BDBDBD"
+                        android:textSize="11sp"
                         android:gravity="center"
                         android:background="@drawable/bg_help_circle"
-                        android:layout_marginEnd="10dp" />
+                        android:layout_marginEnd="12dp" />
 
                     <TextView
                         android:id="@+id/tvResolution"
@@ -303,7 +302,7 @@
                         android:text="640×480"
                         android:textColor="#1976D2"
                         android:textSize="14sp"
-                        android:layout_marginEnd="4dp" />
+                        android:layout_marginEnd="8dp" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -313,16 +312,34 @@
                         android:textSize="20sp"
                         android:gravity="center" />
                 </LinearLayout>
+            </LinearLayout>
 
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" />
+            <!-- 进度卡片设置 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:padding="16dp"
+                android:layout_marginBottom="12dp"
+                android:elevation="1dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="进度卡片"
+                    android:textColor="#1976D2"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.08"
+                    android:layout_marginBottom="4dp" />
 
                 <!-- 始终显示进度卡片 -->
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="48dp"
                     android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingVertical="12dp">
+                    android:gravity="center_vertical">
 
                     <TextView
                         android:layout_width="0dp"
@@ -334,21 +351,22 @@
 
                     <TextView
                         android:id="@+id/btnHelpAlwaysShow"
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
                         android:text="?"
-                        android:textColor="#9E9E9E"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
+                        android:textColor="#BDBDBD"
+                        android:textSize="11sp"
                         android:gravity="center"
                         android:background="@drawable/bg_help_circle"
-                        android:layout_marginEnd="10dp" />
+                        android:layout_marginEnd="12dp" />
 
                     <Switch
                         android:id="@+id/switchAlwaysShowProgress"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:checked="false" />
+                        android:checked="true"
+                        android:track="@drawable/switch_track_selector"
+                        android:thumb="@drawable/switch_thumb" />
                 </LinearLayout>
 
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" />
@@ -356,10 +374,9 @@
                 <!-- 解码时显示进度卡片 -->
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="48dp"
                     android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingVertical="12dp">
+                    android:gravity="center_vertical">
 
                     <TextView
                         android:layout_width="0dp"
@@ -371,21 +388,22 @@
 
                     <TextView
                         android:id="@+id/btnHelpProgress"
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
                         android:text="?"
-                        android:textColor="#9E9E9E"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
+                        android:textColor="#BDBDBD"
+                        android:textSize="11sp"
                         android:gravity="center"
                         android:background="@drawable/bg_help_circle"
-                        android:layout_marginEnd="10dp" />
+                        android:layout_marginEnd="12dp" />
 
                     <Switch
                         android:id="@+id/switchShowProgress"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:checked="true" />
+                        android:checked="true"
+                        android:track="@drawable/switch_track_selector"
+                        android:thumb="@drawable/switch_thumb" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -427,7 +445,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="v3.7.0 · 离线二维码文件传输"
+                        android:text="v3.8.0 · 离线二维码文件传输"
                         android:textColor="#9E9E9E"
                         android:textSize="12sp"
                         android:layout_marginTop="4dp" />
