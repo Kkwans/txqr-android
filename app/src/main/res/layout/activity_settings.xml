@@ -151,21 +151,24 @@
                         android:gravity="center_vertical">
 
                         <TextView
+                            android:id="@+id/tvQrOnly"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="仅扫描 QR 码"
                             android:textColor="#212121"
-                            android:textSize="15sp" />
+                            android:textSize="15sp"
+                            android:clickable="true"
+                            android:focusable="true" />
 
                         <TextView
                             android:id="@+id/btnHelpQrOnly"
-                            android:layout_width="28dp"
-                            android:layout_height="28dp"
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
                             android:text="?"
                             android:textColor="#BDBDBD"
-                            android:textSize="10sp"
+                            android:textSize="12sp"
                             android:gravity="center"
-                            android:background="@drawable/bg_help_circle"
+                            
                             android:layout_marginStart="4dp" />
                     </LinearLayout>
 
@@ -193,21 +196,24 @@
                         android:gravity="center_vertical">
 
                         <TextView
+                            android:id="@+id/tvAutoFocus"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="连续自动对焦"
                             android:textColor="#212121"
-                            android:textSize="15sp" />
+                            android:textSize="15sp"
+                            android:clickable="true"
+                            android:focusable="true" />
 
                         <TextView
                             android:id="@+id/btnHelpAutoFocus"
-                            android:layout_width="28dp"
-                            android:layout_height="28dp"
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
                             android:text="?"
                             android:textColor="#BDBDBD"
-                            android:textSize="10sp"
+                            android:textSize="12sp"
                             android:gravity="center"
-                            android:background="@drawable/bg_help_circle"
+                            
                             android:layout_marginStart="4dp" />
                     </LinearLayout>
 
@@ -235,21 +241,24 @@
                         android:gravity="center_vertical">
 
                         <TextView
+                            android:id="@+id/tvOverlay"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="扫描区域提示"
                             android:textColor="#212121"
-                            android:textSize="15sp" />
+                            android:textSize="15sp"
+                            android:clickable="true"
+                            android:focusable="true" />
 
                         <TextView
                             android:id="@+id/btnHelpOverlay"
-                            android:layout_width="28dp"
-                            android:layout_height="28dp"
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
                             android:text="?"
                             android:textColor="#BDBDBD"
-                            android:textSize="10sp"
+                            android:textSize="12sp"
                             android:gravity="center"
-                            android:background="@drawable/bg_help_circle"
+                            
                             android:layout_marginStart="4dp" />
                     </LinearLayout>
 
@@ -299,21 +308,24 @@
                         android:gravity="center_vertical">
 
                         <TextView
+                            android:id="@+id/tvResolutionLabel"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="分析分辨率"
                             android:textColor="#212121"
-                            android:textSize="15sp" />
+                            android:textSize="15sp"
+                            android:clickable="true"
+                            android:focusable="true" />
 
                         <TextView
                             android:id="@+id/btnHelpResolution"
-                            android:layout_width="28dp"
-                            android:layout_height="28dp"
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
                             android:text="?"
                             android:textColor="#BDBDBD"
-                            android:textSize="10sp"
+                            android:textSize="12sp"
                             android:gravity="center"
-                            android:background="@drawable/bg_help_circle"
+                            
                             android:layout_marginStart="4dp" />
                     </LinearLayout>
 
@@ -372,21 +384,24 @@
                         android:gravity="center_vertical">
 
                         <TextView
+                            android:id="@+id/tvAlwaysShowLabel"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="始终显示进度卡片"
                             android:textColor="#212121"
-                            android:textSize="15sp" />
+                            android:textSize="15sp"
+                            android:clickable="true"
+                            android:focusable="true" />
 
                         <TextView
                             android:id="@+id/btnHelpAlwaysShow"
-                            android:layout_width="28dp"
-                            android:layout_height="28dp"
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
                             android:text="?"
                             android:textColor="#BDBDBD"
-                            android:textSize="10sp"
+                            android:textSize="12sp"
                             android:gravity="center"
-                            android:background="@drawable/bg_help_circle"
+                            
                             android:layout_marginStart="4dp" />
                     </LinearLayout>
 
@@ -414,21 +429,24 @@
                         android:gravity="center_vertical">
 
                         <TextView
+                            android:id="@+id/tvProgressLabel"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="解码时显示进度卡片"
                             android:textColor="#212121"
-                            android:textSize="15sp" />
+                            android:textSize="15sp"
+                            android:clickable="true"
+                            android:focusable="true" />
 
                         <TextView
                             android:id="@+id/btnHelpProgress"
-                            android:layout_width="28dp"
-                            android:layout_height="28dp"
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
                             android:text="?"
                             android:textColor="#BDBDBD"
-                            android:textSize="10sp"
+                            android:textSize="12sp"
                             android:gravity="center"
-                            android:background="@drawable/bg_help_circle"
+                            
                             android:layout_marginStart="4dp" />
                     </LinearLayout>
 
@@ -478,7 +496,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="v3.8.0 · 离线二维码文件传输"
+                        android:text="v3.11.0 · 离线二维码文件传输"
                         android:textColor="#9E9E9E"
                         android:textSize="12sp"
                         android:layout_marginTop="4dp" />

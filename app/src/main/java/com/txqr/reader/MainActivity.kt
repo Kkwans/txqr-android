@@ -15,6 +15,7 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
+import android.graphics.drawable.AnimationDrawable
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.LinearLayout
@@ -66,6 +67,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnRestart: Button
     private lateinit var btnStop: Button
     private lateinit var btnSettings: ImageButton
+    private lateinit var dotIndicator: View
 
     private val isProcessing = AtomicBoolean(false)
     private var fileCount = 0
@@ -135,6 +137,8 @@ class MainActivity : AppCompatActivity() {
         btnStop = findViewById(R.id.btnStop)
         btnSettings = findViewById(R.id.btnSettings)
 
+        dotIndicator = (progressTitle.parent as LinearLayout).getChildAt(0)
+
         decoder = Mobile.newDecoder()
         cameraExecutor = Executors.newSingleThreadExecutor()
         fileCount = prefs.getInt(KEY_FILE_COUNT, 0)
@@ -165,14 +169,19 @@ class MainActivity : AppCompatActivity() {
         val alwaysShow = prefs.getBoolean("always_show_progress", true)
         val showProgress = prefs.getBoolean("show_progress", true)
 
-        if (alwaysShow && !isScanning && !decoder.isCompleted()) {
-            // 始终显示开启，非解码状态 → 显示等待卡片
-            showProgressCardWaiting()
-        } else if (!alwaysShow && !showProgress && progressCard.visibility == View.VISIBLE) {
-            // 始终显示关闭 + 解码时显示也关闭 + 卡片当前可见 → 立即隐藏
-            progressCard.visibility = View.GONE
+        if (!isScanning) {
+            // 非解码中状态 → 是否展示取决于“始终显示进度卡片”
+            if (alwaysShow && !decoder.isCompleted()) {
+                showProgressCardWaiting()
+            } else {
+                progressCard.visibility = View.GONE
+            }
+        } else {
+            // 解码中状态 → 是否展示取决于“解码时显示进度卡片”
+            if (!showProgress) {
+                progressCard.visibility = View.GONE
+            }
         }
-        // 其他情况（始终显示关闭但解码时显示开启且正在解码）→ 保持当前状态
 
         updateScanAreaOffset()
     }
@@ -209,6 +218,7 @@ class MainActivity : AppCompatActivity() {
         fileInfo.text = ""
         btnStartScan.visibility = View.VISIBLE
         scanButtons.visibility = View.GONE
+        dotIndicator.setBackgroundResource(R.drawable.dot_indicator)
         updateScanAreaOffset()
     }
 
@@ -225,6 +235,8 @@ class MainActivity : AppCompatActivity() {
         diagnosticInfo.text = "诊断: 0 新帧 | 0 重复"
         fileInfo.text = ""
         statusText.text = "扫描中..."
+        dotIndicator.setBackgroundResource(R.drawable.dot_breathing)
+        (dotIndicator.background as? AnimationDrawable)?.start()
         updateScanAreaOffset()
     }
 
@@ -233,17 +245,18 @@ class MainActivity : AppCompatActivity() {
         if (isPaused) {
             isStopped = true
             btnStop.text = "继续扫描"
-            btnStop.setTextColor(Color.parseColor("#2E7D32"))
-            btnStop.setBackgroundColor(Color.parseColor("#A5D6A7"))
+            btnStop.setBackgroundResource(R.drawable.btn_green)
             statusText.text = "已暂停"
             progressTitle.text = "  已暂停"
+            dotIndicator.setBackgroundResource(R.drawable.dot_paused)
         } else {
             isStopped = false
             btnStop.text = "暂停扫描"
-            btnStop.setTextColor(Color.parseColor("#C62828"))
-            btnStop.setBackgroundColor(Color.parseColor("#FFCDD2"))
+            btnStop.setBackgroundResource(R.drawable.btn_red)
             statusText.text = "扫描中..."
             progressTitle.text = "  正在解码"
+            dotIndicator.setBackgroundResource(R.drawable.dot_breathing)
+            (dotIndicator.background as? AnimationDrawable)?.start()
         }
     }
 
@@ -387,6 +400,13 @@ class MainActivity : AppCompatActivity() {
         decoderStatus.text = "解码器: 工作中 | 摄像头: ${if (currentCamera != null) "正常" else "未连接"}"
         diagnosticInfo.text = "诊断: ${newFrames} 新帧 | ${duplicateFrames} 重复"
         statusText.text = "⏳ $progress% | $unique/$total 帧"
+
+        // 确保呼吸动画在运行
+        if (dotIndicator.background !is AnimationDrawable || !(dotIndicator.background as AnimationDrawable).isRunning) {
+            dotIndicator.setBackgroundResource(R.drawable.dot_breathing)
+            (dotIndicator.background as? AnimationDrawable)?.start()
+        }
+
         updateScanAreaOffset()
     }
 
@@ -504,8 +524,9 @@ class MainActivity : AppCompatActivity() {
         if (prefs.getBoolean("always_show_progress", true)) showProgressCardWaiting()
         else { progressCard.visibility = View.GONE; updateScanAreaOffset() }
         statusText.text = "将摄像头对准二维码动画"; frameCountText.text = ""
-        btnStop.text = "暂停扫描"; btnStop.setTextColor(Color.parseColor("#EF5350"))
-        btnStop.backgroundTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#FFCDD2"))
+        btnStop.text = "暂停扫描"
+        btnStop.setBackgroundResource(R.drawable.btn_red)
+        dotIndicator.setBackgroundResource(R.drawable.dot_indicator)
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all { ContextCompat.checkSelfPermission(baseContext, it) == PackageManager.PERMISSION_GRANTED }

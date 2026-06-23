@@ -70,11 +70,11 @@
         android:paddingHorizontal="14dp"
         android:paddingVertical="8dp" />
 
-    <!-- 进度卡片（底部，统一高度） -->
+    <!-- 进度卡片（底部，固定高度） -->
     <LinearLayout
         android:id="@+id/progressCard"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="250dp"
         android:layout_gravity="bottom"
         android:layout_marginHorizontal="12dp"
         android:layout_marginBottom="24dp"
@@ -166,7 +166,7 @@
             android:layout_height="42dp"
             android:text="▶ 开始扫描"
             android:textSize="14sp"
-            android:background="#1976D2"
+            android:background="@drawable/btn_green"
             android:textColor="#FFFFFF"
             android:visibility="gone"
             android:layout_marginBottom="8dp" />
@@ -186,8 +186,8 @@
                 android:layout_weight="1"
                 android:text="重新开始"
                 android:textSize="13sp"
-                android:background="#E0E0E0"
-                android:textColor="#212121"
+                android:background="@drawable/btn_blue"
+                android:textColor="#FFFFFF"
                 android:layout_marginEnd="6dp" />
 
             <Button
@@ -197,8 +197,8 @@
                 android:layout_weight="1"
                 android:text="暂停扫描"
                 android:textSize="13sp"
-                android:background="#FFCDD2"
-                android:textColor="#C62828"
+                android:background="@drawable/btn_red"
+                android:textColor="#FFFFFF"
                 android:layout_marginStart="6dp" />
         </LinearLayout>
     </LinearLayout>
