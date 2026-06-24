@@ -11,10 +11,12 @@ import android.provider.DocumentsContract
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.LinearLayout
-import android.widget.Spinner
+import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.Switch
+import android.widget.Spinner
 import android.widget.TextView
+import android.widget.Switch
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -58,12 +60,31 @@ class SettingsActivity : AppCompatActivity() {
         switchAlwaysShow = findViewById(R.id.switchAlwaysShowProgress)
 
         // 设置分辨率下拉框
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, RESOLUTION_LABELS)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        val adapter = object : ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, RESOLUTION_LABELS) {
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = super.getView(position, convertView, parent) as TextView
+                view.textSize = 14f
+                view.setTextColor(resources.getColor(R.color.primary, null))
+                view.setPadding(0, 0, 0, 0)
+                return view
+            }
+
+            override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = super.getDropDownView(position, convertView, parent) as TextView
+                view.textSize = 14f
+                view.setTextColor(resources.getColor(android.R.color.black, null))
+                val padH = (16 * resources.displayMetrics.density).toInt()
+                val padV = (12 * resources.displayMetrics.density).toInt()
+                view.setPadding(padH, padV, padH, padV)
+                view.setBackgroundColor(resources.getColor(android.R.color.white, null))
+                return view
+            }
+        }
         spinnerResolution.adapter = adapter
         val currentIdx = RESOLUTION_VALUES.indexOf(prefs.getString(KEY_RESOLUTION, "640x480") ?: "640x480").coerceAtLeast(0)
         spinnerResolution.setSelection(currentIdx)
-        spinnerResolution.setOnItemSelectedListener(object : android.widget.AdapterView.OnItemSelectedListener {
+
+        spinnerResolution.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
                 prefs.edit().putString(KEY_RESOLUTION, RESOLUTION_VALUES[position]).apply()
             }
