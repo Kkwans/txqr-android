@@ -90,7 +90,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="10dp">
+            android:layout_marginBottom="6dp">
 
             <com.txqr.reader.BreathingDotView
                 android:id="@+id/dotIndicator"
@@ -126,7 +126,7 @@
             android:max="100"
             android:progress="0"
             android:progressDrawable="@drawable/progress_bar_gradient"
-            android:layout_marginBottom="10dp" />
+            android:layout_marginBottom="6dp" />
 
         <!-- 进度百分比 -->
         <TextView
@@ -137,7 +137,7 @@
             android:textColor="#FFFFFF"
             android:textSize="15sp"
             android:textStyle="bold"
-            android:layout_marginBottom="6dp" />
+            android:layout_marginBottom="4dp" />
 
         <!-- 解码器状态 -->
         <TextView
@@ -157,7 +157,7 @@
             android:text="诊断: 0 新帧 | 0 重复"
             android:textColor="#66FFFFFF"
             android:textSize="11sp"
-            android:layout_marginBottom="14dp" />
+            android:layout_marginBottom="10dp" />
 
         <!-- 开始扫描按钮 -->
         <Button
@@ -226,7 +226,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="10dp">
+            android:layout_marginBottom="4dp">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -260,7 +260,7 @@
             android:max="100"
             android:progress="100"
             android:progressDrawable="@drawable/progress_bar_gradient"
-            android:layout_marginBottom="10dp" />
+            android:layout_marginBottom="4dp" />
 
         <!-- 帧数信息 -->
         <TextView
@@ -271,14 +271,14 @@
             android:textColor="#FFFFFF"
             android:textSize="15sp"
             android:textStyle="bold"
-            android:layout_marginBottom="14dp" />
+            android:layout_marginBottom="6dp" />
 
         <!-- 按钮区：打开文件 + 打开目录 -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="8dp">
+            android:layout_marginBottom="2dp">
 
             <Button
                 android:id="@+id/btnOpenFile"

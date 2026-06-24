@@ -92,7 +92,7 @@ func (d *Decoder) IsCompleted() bool { return d.completed }
 func (d *Decoder) DataBytes() []byte { return d.dataBytes }
 
 // Progress returns decoding progress (0-100).
-// Uses frameCount / minChunks ratio, capped at 95 until complete.
+// Uses frameCount / minChunks ratio with gradual curve.
 func (d *Decoder) Progress() int {
 	if d.completed {
 		return 100
@@ -104,11 +104,22 @@ func (d *Decoder) Progress() int {
 	if minChunks == 0 {
 		return 0
 	}
-	// Progress = unique frames received / minimum chunks needed
-	// Cap at 95% since fountain codes need some extra frames
-	p := d.frameCount * 95 / minChunks
-	if p > 95 {
-		p = 95
+	// Base progress from frameCount / minChunks, capped at 90%
+	p := d.frameCount * 90 / minChunks
+	if p > 90 {
+		p = 90
+	}
+	// After reaching 90%, gradually increase to 99% as more frames arrive
+	if d.frameCount > minChunks {
+		extra := d.frameCount - minChunks
+		bonus := extra * 9 / minChunks
+		if bonus > 9 {
+			bonus = 9
+		}
+		p = 90 + bonus
+	}
+	if p > 99 {
+		p = 99
 	}
 	return p
 }

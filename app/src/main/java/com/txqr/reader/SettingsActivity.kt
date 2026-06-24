@@ -80,6 +80,7 @@ class SettingsActivity : AppCompatActivity() {
                 view.setBackgroundColor(resources.getColor(android.R.color.white, null))
                 view.isSingleLine = false
                 view.ellipsize = null
+                view.gravity = android.view.Gravity.CENTER
                 return view
             }
         }
