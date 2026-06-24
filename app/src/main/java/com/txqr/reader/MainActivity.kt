@@ -63,6 +63,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnOpenFile: Button
     private lateinit var btnOpenDir: Button
     private lateinit var btnNextFile: Button
+    private lateinit var resultFileInfo: TextView
+    private lateinit var resultFrameInfo: TextView
     private lateinit var btnRestart: Button
     private lateinit var btnStop: Button
     private lateinit var btnSettings: ImageButton
@@ -133,6 +135,8 @@ class MainActivity : AppCompatActivity() {
         btnOpenFile = findViewById(R.id.btnOpenFile)
         btnOpenDir = findViewById(R.id.btnOpenDir)
         btnNextFile = findViewById(R.id.btnNextFile)
+        resultFileInfo = findViewById(R.id.resultFileInfo)
+        resultFrameInfo = findViewById(R.id.resultFrameInfo)
         btnRestart = findViewById(R.id.btnRestart)
         btnStop = findViewById(R.id.btnStop)
         btnSettings = findViewById(R.id.btnSettings)
@@ -160,8 +164,15 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        // Bug fix: 如果解码已完成，只显示结果面板，隐藏进度卡片
+        if (decoder.isCompleted()) {
+            progressCard.visibility = View.GONE
+            resultPanel.visibility = View.VISIBLE
+            return
+        }
         applySettings()
     }
+
 
     private fun applySettings() {
         overlayView.setScanAreaVisible(prefs.getBoolean("show_overlay", true))
@@ -387,11 +398,12 @@ class MainActivity : AppCompatActivity() {
                     val data = decoder.dataBytes()
                     fileCount++; prefs.edit().putInt(KEY_FILE_COUNT, fileCount).apply()
                     val sf = saveFile(data, fileCount)
-                    if (sf != null) fileInfo.text = "${sf.name} · ${formatSize(data.size.toLong())}"
+                    if (sf != null) { fileInfo.text = "${sf.name} · ${formatSize(data.size.toLong())}"; resultFileInfo.text = "${sf.name} · ${formatSize(data.size.toLong())}" }
                     statusText.text = "✅ 解码完成！"
                     progressTitle.text = "  解码完成"
                     progressBar.progress = 100
                     progressPercent.text = "100% | 解码完成"
+                    resultFrameInfo.text = "100% | ${uniqueFrames} 帧解码完成"
                     frameCountText.text = sf?.name ?: ""
                     overlayView.clear()
                     progressCard.visibility = View.GONE

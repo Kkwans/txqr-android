@@ -162,12 +162,14 @@
 
                         <TextView
                             android:id="@+id/btnHelpQrOnly"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
                             android:text="?"
                             android:textColor="#9E9E9E"
-                            android:textSize="12sp"
-                            android:layout_marginStart="4dp" />
+                            android:textSize="10sp"
+                            android:gravity="center"
+                            android:background="@drawable/bg_help_circle"
+                            android:layout_marginStart="6dp" />
                     </LinearLayout>
 
                     <Switch
@@ -205,12 +207,14 @@
 
                         <TextView
                             android:id="@+id/btnHelpAutoFocus"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
                             android:text="?"
                             android:textColor="#9E9E9E"
-                            android:textSize="12sp"
-                            android:layout_marginStart="4dp" />
+                            android:textSize="10sp"
+                            android:gravity="center"
+                            android:background="@drawable/bg_help_circle"
+                            android:layout_marginStart="6dp" />
                     </LinearLayout>
 
                     <Switch
@@ -248,12 +252,14 @@
 
                         <TextView
                             android:id="@+id/btnHelpOverlay"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
                             android:text="?"
                             android:textColor="#9E9E9E"
-                            android:textSize="12sp"
-                            android:layout_marginStart="4dp" />
+                            android:textSize="10sp"
+                            android:gravity="center"
+                            android:background="@drawable/bg_help_circle"
+                            android:layout_marginStart="6dp" />
                     </LinearLayout>
 
                     <Switch
@@ -284,7 +290,7 @@
                     android:letterSpacing="0.08"
                     android:layout_marginBottom="4dp" />
 
-                <!-- 分析分辨率（独立行） -->
+                <!-- 分析分辨率 -->
                 <LinearLayout
                     android:id="@+id/resolutionRow"
                     android:layout_width="match_parent"
@@ -313,12 +319,14 @@
 
                         <TextView
                             android:id="@+id/btnHelpResolution"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
                             android:text="?"
                             android:textColor="#9E9E9E"
-                            android:textSize="12sp"
-                            android:layout_marginStart="4dp" />
+                            android:textSize="10sp"
+                            android:gravity="center"
+                            android:background="@drawable/bg_help_circle"
+                            android:layout_marginStart="6dp" />
                     </LinearLayout>
 
                     <Spinner
@@ -328,8 +336,8 @@
                         android:layout_marginStart="8dp"
                         android:background="@drawable/bg_spinner"
                         android:popupBackground="@drawable/bg_spinner_dropdown"
-                        android:dropDownWidth="match_parent"
-                        android:dropDownVerticalOffset="40dp"
+                        android:dropDownWidth="wrap_content"
+                        android:dropDownVerticalOffset="3dp"
                         android:spinnerMode="dropdown"
                         android:overlapAnchor="false" />
                 </LinearLayout>
@@ -381,12 +389,14 @@
 
                         <TextView
                             android:id="@+id/btnHelpAlwaysShow"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
                             android:text="?"
                             android:textColor="#9E9E9E"
-                            android:textSize="12sp"
-                            android:layout_marginStart="4dp" />
+                            android:textSize="10sp"
+                            android:gravity="center"
+                            android:background="@drawable/bg_help_circle"
+                            android:layout_marginStart="6dp" />
                     </LinearLayout>
 
                     <Switch
@@ -424,12 +434,14 @@
 
                         <TextView
                             android:id="@+id/btnHelpProgress"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
                             android:text="?"
                             android:textColor="#9E9E9E"
-                            android:textSize="12sp"
-                            android:layout_marginStart="4dp" />
+                            android:textSize="10sp"
+                            android:gravity="center"
+                            android:background="@drawable/bg_help_circle"
+                            android:layout_marginStart="6dp" />
                     </LinearLayout>
 
                     <Switch
@@ -462,7 +474,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="v3.14.0 · 离线二维码文件传输"
+                    android:text="v4.0.0 · 离线二维码文件传输"
                     android:textColor="#9E9E9E"
                     android:textSize="12sp"
                     android:layout_marginTop="4dp" />

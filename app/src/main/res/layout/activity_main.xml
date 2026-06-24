@@ -206,66 +206,114 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- 结果面板 -->
+    <!-- 结果面板（和进度卡片等高，190dp） -->
     <LinearLayout
         android:id="@+id/resultPanel"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="190dp"
         android:layout_gravity="bottom"
         android:orientation="vertical"
         android:background="@drawable/bg_card_blur"
-        android:padding="20dp"
+        android:padding="16dp"
         android:layout_marginHorizontal="12dp"
         android:layout_marginBottom="24dp"
         android:elevation="8dp"
         android:visibility="gone">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="✅ 解码完成"
-            android:textSize="17sp"
-            android:textStyle="bold"
-            android:textColor="#FFFFFF"
-            android:gravity="center"
-            android:layout_marginBottom="16dp" />
-
+        <!-- 标题行：✅ 解码完成 + 文件名 · 大小 -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="✅ "
+                android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="解码完成"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/resultFileInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="#80FFFFFF"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- 进度条（100%） -->
+        <ProgressBar
+            style="@android:style/Widget.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:max="100"
+            android:progress="100"
+            android:progressDrawable="@drawable/progress_bar_gradient"
+            android:layout_marginBottom="10dp" />
+
+        <!-- 帧数信息 -->
+        <TextView
+            android:id="@+id/resultFrameInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="100% | 解码完成"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="14dp" />
+
+        <!-- 按钮区：打开文件 + 打开目录 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
 
             <Button
                 android:id="@+id/btnOpenFile"
+                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
                 android:layout_width="0dp"
-                android:layout_height="46dp"
+                android:layout_height="42dp"
                 android:layout_weight="1"
                 android:text="📄 打开文件"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:backgroundTint="#1976D2"
                 android:textColor="#FFFFFF"
                 android:layout_marginEnd="6dp" />
 
             <Button
                 android:id="@+id/btnOpenDir"
+                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
                 android:layout_width="0dp"
-                android:layout_height="46dp"
+                android:layout_height="42dp"
                 android:layout_weight="1"
                 android:text="📂 打开目录"
-                android:textSize="14sp"
-                android:backgroundTint="#388E3C"
+                android:textSize="13sp"
+                android:backgroundTint="#FF9800"
                 android:textColor="#FFFFFF"
                 android:layout_marginStart="6dp" />
         </LinearLayout>
 
+        <!-- 继续扫描按钮（独占一行，绿色） -->
         <Button
             android:id="@+id/btnNextFile"
+            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
             android:layout_width="match_parent"
             android:layout_height="42dp"
-            android:layout_marginTop="8dp"
             android:text="🔄 继续扫描"
             android:textSize="14sp"
-            android:background="#33FFFFFF"
+            android:backgroundTint="#4CAF50"
             android:textColor="#FFFFFF" />
     </LinearLayout>
 

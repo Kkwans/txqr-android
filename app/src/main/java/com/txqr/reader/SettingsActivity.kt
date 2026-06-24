@@ -65,6 +65,7 @@ class SettingsActivity : AppCompatActivity() {
                 val view = super.getView(position, convertView, parent) as TextView
                 view.textSize = 14f
                 view.setTextColor(resources.getColor(R.color.primary, null))
+                view.gravity = android.view.Gravity.CENTER
                 view.setPadding(0, 0, 0, 0)
                 return view
             }
@@ -77,6 +78,8 @@ class SettingsActivity : AppCompatActivity() {
                 val padV = (12 * resources.displayMetrics.density).toInt()
                 view.setPadding(padH, padV, padH, padV)
                 view.setBackgroundColor(resources.getColor(android.R.color.white, null))
+                view.isSingleLine = false
+                view.ellipsize = null
                 return view
             }
         }
