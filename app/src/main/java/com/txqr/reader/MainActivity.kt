@@ -69,6 +69,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnStop: Button
     private lateinit var btnSettings: ImageButton
     private lateinit var dotIndicator: BreathingDotView
+    private lateinit var btnHelpTotalFrames: TextView
 
     private val isProcessing = AtomicBoolean(false)
     private var fileCount = 0
@@ -142,6 +143,7 @@ class MainActivity : AppCompatActivity() {
         btnSettings = findViewById(R.id.btnSettings)
 
         dotIndicator = findViewById(R.id.dotIndicator)
+        btnHelpTotalFrames = findViewById(R.id.btnHelpTotalFrames)
 
         decoder = Mobile.newDecoder()
         cameraExecutor = Executors.newSingleThreadExecutor()
@@ -154,6 +156,17 @@ class MainActivity : AppCompatActivity() {
         btnStop.setOnClickListener { togglePause() }
         btnStartScan.setOnClickListener { startScanningFromButton() }
         btnSettings.setOnClickListener { startActivity(Intent(this, SettingsActivity::class.java)) }
+        btnHelpTotalFrames.setOnClickListener {
+            androidx.appcompat.app.AlertDialog.Builder(this, R.style.RoundedDialog)
+                .setTitle("总帧数说明")
+                .setMessage("显示的总帧数是理论最小值（文件大小 ÷ 每帧数据量）。
+
+由于 LT 码的随机编码特性，实际解码通常需要比最小值多 5-15% 的帧数，这是正常现象。
+
+进度条会根据实际解码情况实时更新。")
+                .setPositiveButton("知道了", null)
+                .show()
+        }
 
         setupGestures()
         applySettings()
@@ -423,17 +436,17 @@ class MainActivity : AppCompatActivity() {
         val total = decoder.totalFrames().toInt()
 
         if (!showP && !always) {
-            statusText.text = "⏳ $progress% | $unique/$total 帧"
+            statusText.text = "⏳ $progress% | $unique/$total? 帧"
             return
         }
         progressCard.visibility = View.VISIBLE
         progressBar.progress = progress
         progressTitle.text = "  正在解码"
-        progressPercent.text = "$progress% | $unique/$total 帧"
+        progressPercent.text = "$progress% | $unique/$total? 帧"
         fileInfo.text = if (decoder.totalSize().toInt() > 0) formatSize(decoder.totalSize().toLong()) else ""
         decoderStatus.text = "解码器: 工作中 | 摄像头: ${if (currentCamera != null) "正常" else "未连接"}"
         diagnosticInfo.text = "诊断: ${newFrames} 新帧 | ${duplicateFrames} 重复"
-        statusText.text = "⏳ $progress% | $unique/$total 帧"
+        statusText.text = "⏳ $progress% | $unique/$total? 帧"
 
         // 确保呼吸动画在运行（解码中用青色）
         startBreathingAnimation("#26C6DA")

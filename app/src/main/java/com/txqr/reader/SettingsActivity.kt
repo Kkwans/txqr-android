@@ -75,16 +75,17 @@ class SettingsActivity : AppCompatActivity() {
                 view.textSize = 14f
                 view.setTextColor(resources.getColor(android.R.color.black, null))
                 val padH = (16 * resources.displayMetrics.density).toInt()
-                val padV = (12 * resources.displayMetrics.density).toInt()
+                val padV = (14 * resources.displayMetrics.density).toInt()
                 view.setPadding(padH, padV, padH, padV)
                 view.setBackgroundColor(resources.getColor(android.R.color.white, null))
-                view.isSingleLine = false
+                view.isSingleLine = true
                 view.ellipsize = null
-                view.gravity = android.view.Gravity.CENTER
+                view.gravity = android.view.Gravity.START or android.view.Gravity.CENTER_VERTICAL
                 return view
             }
         }
         spinnerResolution.adapter = adapter
+        spinnerResolution.dropDownWidth = android.view.ViewGroup.LayoutParams.MATCH_PARENT
         val currentIdx = RESOLUTION_VALUES.indexOf(prefs.getString(KEY_RESOLUTION, "640x480") ?: "640x480").coerceAtLeast(0)
         spinnerResolution.setSelection(currentIdx)
 

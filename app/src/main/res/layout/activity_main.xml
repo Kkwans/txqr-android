@@ -129,15 +129,36 @@
             android:layout_marginBottom="6dp" />
 
         <!-- 进度百分比 -->
-        <TextView
-            android:id="@+id/progressPercent"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="0% | 0/0 帧"
-            android:textColor="#FFFFFF"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="4dp" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="4dp">
+
+            <TextView
+                android:id="@+id/progressPercent"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="0% | 0/0 帧"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/btnHelpTotalFrames"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:text="?"
+                android:textColor="#99FFFFFF"
+                android:textSize="10sp"
+                android:gravity="center"
+                android:background="@drawable/bg_help_circle"
+                android:layout_marginStart="4dp"
+                android:clickable="true"
+                android:focusable="true" />
+        </LinearLayout>
 
         <!-- 解码器状态 -->
         <TextView
