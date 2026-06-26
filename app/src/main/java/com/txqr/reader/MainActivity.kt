@@ -159,11 +159,11 @@ class MainActivity : AppCompatActivity() {
         btnHelpTotalFrames.setOnClickListener {
             androidx.appcompat.app.AlertDialog.Builder(this, R.style.RoundedDialog)
                 .setTitle("总帧数说明")
-                .setMessage("显示的总帧数是理论最小值（文件大小 ÷ 每帧数据量）。
+                .setMessage("""显示的总帧数是理论最小值（文件大小 ÷ 每帧数据量）。
 
 由于 LT 码的随机编码特性，实际解码通常需要比最小值多 5-15% 的帧数，这是正常现象。
 
-进度条会根据实际解码情况实时更新。")
+进度条会根据实际解码情况实时更新。""")
                 .setPositiveButton("知道了", null)
                 .show()
         }
