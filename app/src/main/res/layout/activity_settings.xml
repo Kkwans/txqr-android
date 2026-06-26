@@ -112,8 +112,7 @@
                     android:text="📂 查看保存目录"
                     android:textSize="13sp"
                     android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_btn_outline"
-                    android:backgroundTint="@null"
+                    android:backgroundTint="#E3F2FD"
                     android:textColor="#1976D2" />
             </LinearLayout>
 
@@ -332,13 +331,11 @@
 
                     <Spinner
                         android:id="@+id/spinnerResolution"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="36dp"
+                        android:layout_weight="1"
                         android:layout_marginStart="8dp"
                         android:background="@drawable/bg_spinner"
-                        android:popupBackground="@drawable/bg_spinner_dropdown"
-                        android:dropDownWidth="match_parent"
-                        android:dropDownVerticalOffset="3dp"
                         android:spinnerMode="dropdown"
                         android:overlapAnchor="false" />
                 </LinearLayout>

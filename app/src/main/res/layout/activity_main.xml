@@ -143,8 +143,7 @@
                 android:layout_weight="1"
                 android:text="0% | 0/0 帧"
                 android:textColor="#FFFFFF"
-                android:textSize="15sp"
-                android:textStyle="bold" />
+                android:textSize="15sp" />
 
             <TextView
                 android:id="@+id/btnHelpTotalFrames"

@@ -428,6 +428,23 @@ class MainActivity : AppCompatActivity() {
         finally { isProcessing.set(false) }
     }
 
+    private fun buildFrameText(progress: Int, unique: Int, total: Int): CharSequence {
+        val base = "$progress% | $unique/$total 帧"
+        val ss = android.text.SpannableString(base)
+        val uniqueStr = "$unique"
+        val uStart = base.indexOf(uniqueStr)
+        if (uStart >= 0) {
+            ss.setSpan(android.text.style.StyleSpan(android.graphics.Typeface.BOLD), uStart, uStart + uniqueStr.length, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        val totalStr = "$total"
+        val slashIdx = base.indexOf('/')
+        val tStart = base.indexOf(totalStr, slashIdx)
+        if (tStart >= 0) {
+            ss.setSpan(android.text.style.ForegroundColorSpan(android.graphics.Color.argb(140, 255, 255, 255)), tStart, tStart + totalStr.length, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        return ss
+    }
+
     private fun updateProgressDisplay() {
         val showP = prefs.getBoolean("show_progress", true)
         val always = prefs.getBoolean("always_show_progress", false)
@@ -436,17 +453,17 @@ class MainActivity : AppCompatActivity() {
         val total = decoder.totalFrames().toInt()
 
         if (!showP && !always) {
-            statusText.text = "⏳ $progress% | $unique/$total? 帧"
+            statusText.text = "⏳ $progress% | $unique/$total 帧"
             return
         }
         progressCard.visibility = View.VISIBLE
         progressBar.progress = progress
         progressTitle.text = "  正在解码"
-        progressPercent.text = "$progress% | $unique/$total? 帧"
+        progressPercent.text = buildFrameText(progress, unique, total)
         fileInfo.text = if (decoder.totalSize().toInt() > 0) formatSize(decoder.totalSize().toLong()) else ""
         decoderStatus.text = "解码器: 工作中 | 摄像头: ${if (currentCamera != null) "正常" else "未连接"}"
         diagnosticInfo.text = "诊断: ${newFrames} 新帧 | ${duplicateFrames} 重复"
-        statusText.text = "⏳ $progress% | $unique/$total? 帧"
+        statusText.text = "⏳ $progress% | $unique/$total 帧"
 
         // 确保呼吸动画在运行（解码中用青色）
         startBreathingAnimation("#26C6DA")

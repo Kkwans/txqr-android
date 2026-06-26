@@ -74,13 +74,17 @@ class SettingsActivity : AppCompatActivity() {
                 val view = super.getDropDownView(position, convertView, parent) as TextView
                 view.textSize = 14f
                 view.setTextColor(resources.getColor(android.R.color.black, null))
-                val padH = (16 * resources.displayMetrics.density).toInt()
+                val padH = (12 * resources.displayMetrics.density).toInt()
                 val padV = (14 * resources.displayMetrics.density).toInt()
                 view.setPadding(padH, padV, padH, padV)
                 view.setBackgroundColor(resources.getColor(android.R.color.white, null))
                 view.isSingleLine = true
                 view.ellipsize = null
                 view.gravity = android.view.Gravity.START or android.view.Gravity.CENTER_VERTICAL
+                view.layoutParams = android.widget.AbsListView.LayoutParams(
+                    android.widget.AbsListView.LayoutParams.MATCH_PARENT,
+                    android.widget.AbsListView.LayoutParams.WRAP_CONTENT
+                )
                 return view
             }
         }
