@@ -80,7 +80,7 @@ class SettingsActivity : AppCompatActivity() {
                 view.setBackgroundColor(resources.getColor(android.R.color.white, null))
                 view.isSingleLine = true
                 view.ellipsize = null
-                view.gravity = android.view.Gravity.START or android.view.Gravity.CENTER_VERTICAL
+                view.gravity = android.view.Gravity.CENTER
                 view.layoutParams = android.widget.AbsListView.LayoutParams(
                     android.widget.AbsListView.LayoutParams.MATCH_PARENT,
                     android.widget.AbsListView.LayoutParams.WRAP_CONTENT
@@ -89,7 +89,8 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
         spinnerResolution.adapter = adapter
-        spinnerResolution.dropDownWidth = android.view.ViewGroup.LayoutParams.MATCH_PARENT
+        spinnerResolution.dropDownWidth = android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+        spinnerResolution.popupBackground = androidx.core.content.ContextCompat.getDrawable(this, R.drawable.bg_spinner_dropdown)
         val currentIdx = RESOLUTION_VALUES.indexOf(prefs.getString(KEY_RESOLUTION, "640x480") ?: "640x480").coerceAtLeast(0)
         spinnerResolution.setSelection(currentIdx)
 

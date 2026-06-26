@@ -74,7 +74,7 @@
     <LinearLayout
         android:id="@+id/progressCard"
         android:layout_width="match_parent"
-        android:layout_height="190dp"
+        android:layout_height="185dp"
         android:layout_gravity="bottom"
         android:layout_marginHorizontal="12dp"
         android:layout_marginBottom="24dp"
@@ -106,7 +106,7 @@
                 android:textColor="#FFFFFF"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                android:layout_marginStart="6dp" />
+                android:layout_marginStart="2dp" />
 
             <TextView
                 android:id="@+id/fileInfo"
@@ -226,11 +226,11 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- 结果面板（和进度卡片等高，190dp） -->
+    <!-- 结果面板（和进度卡片等高，185dp） -->
     <LinearLayout
         android:id="@+id/resultPanel"
         android:layout_width="match_parent"
-        android:layout_height="190dp"
+        android:layout_height="185dp"
         android:layout_gravity="bottom"
         android:orientation="vertical"
         android:background="@drawable/bg_card_blur"
@@ -240,28 +240,28 @@
         android:elevation="8dp"
         android:visibility="gone">
 
-        <!-- 标题行：✅ 解码完成 + 文件名 · 大小 -->
+        <!-- 标题行：解码完成 -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="4dp">
+            android:layout_marginBottom="6dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="✅ "
-                android:textSize="16sp" />
+            <com.txqr.reader.BreathingDotView
+                android:id="@+id/dotResult"
+                android:layout_width="20dp"
+                android:layout_height="20dp" />
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="解码完成"
+                android:text="  解码完成"
                 android:textColor="#FFFFFF"
                 android:textSize="14sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:layout_marginStart="2dp" />
 
             <TextView
                 android:id="@+id/resultFileInfo"
@@ -280,18 +280,38 @@
             android:max="100"
             android:progress="100"
             android:progressDrawable="@drawable/progress_bar_gradient"
-            android:layout_marginBottom="4dp" />
+            android:layout_marginBottom="6dp" />
 
         <!-- 帧数信息 -->
-        <TextView
-            android:id="@+id/resultFrameInfo"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="100% | 解码完成"
-            android:textColor="#FFFFFF"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="6dp" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="4dp">
+
+            <TextView
+                android:id="@+id/resultFrameInfo"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="100% | 解码完成"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/btnHelpTotalFramesResult"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:text="?"
+                android:textColor="#99FFFFFF"
+                android:textSize="10sp"
+                android:gravity="center"
+                android:background="@drawable/bg_help_circle"
+                android:layout_marginStart="4dp"
+                android:clickable="true"
+                android:focusable="true" />
+        </LinearLayout>
 
         <!-- 按钮区：打开文件 + 打开目录 -->
         <LinearLayout

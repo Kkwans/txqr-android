@@ -69,7 +69,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnStop: Button
     private lateinit var btnSettings: ImageButton
     private lateinit var dotIndicator: BreathingDotView
+    private lateinit var dotResult: BreathingDotView
     private lateinit var btnHelpTotalFrames: TextView
+    private lateinit var btnHelpTotalFramesResult: TextView
 
     private val isProcessing = AtomicBoolean(false)
     private var fileCount = 0
@@ -143,7 +145,9 @@ class MainActivity : AppCompatActivity() {
         btnSettings = findViewById(R.id.btnSettings)
 
         dotIndicator = findViewById(R.id.dotIndicator)
+        dotResult = findViewById(R.id.dotResult)
         btnHelpTotalFrames = findViewById(R.id.btnHelpTotalFrames)
+        btnHelpTotalFramesResult = findViewById(R.id.btnHelpTotalFramesResult)
 
         decoder = Mobile.newDecoder()
         cameraExecutor = Executors.newSingleThreadExecutor()
@@ -157,15 +161,10 @@ class MainActivity : AppCompatActivity() {
         btnStartScan.setOnClickListener { startScanningFromButton() }
         btnSettings.setOnClickListener { startActivity(Intent(this, SettingsActivity::class.java)) }
         btnHelpTotalFrames.setOnClickListener {
-            androidx.appcompat.app.AlertDialog.Builder(this, R.style.RoundedDialog)
-                .setTitle("总帧数说明")
-                .setMessage("""显示的总帧数是理论最小值（文件大小 ÷ 每帧数据量）。
-
-由于 LT 码的随机编码特性，实际解码通常需要比最小值多 5-15% 的帧数，这是正常现象。
-
-进度条会根据实际解码情况实时更新。""")
-                .setPositiveButton("知道了", null)
-                .show()
+            showTotalFramesHelp()
+        }
+        btnHelpTotalFramesResult.setOnClickListener {
+            showTotalFramesHelp()
         }
 
         setupGestures()
@@ -206,6 +205,7 @@ class MainActivity : AppCompatActivity() {
                 progressCard.visibility = View.GONE
             } else {
                 progressCard.visibility = View.VISIBLE
+                startBreathingAnimation("#26C6DA")
             }
         }
 
@@ -232,6 +232,18 @@ class MainActivity : AppCompatActivity() {
     private fun getStatusBarHeight(): Int {
         val id = resources.getIdentifier("status_bar_height", "dimen", "android")
         return if (id > 0) resources.getDimensionPixelSize(id) else 0
+    }
+
+    private fun showTotalFramesHelp() {
+        androidx.appcompat.app.AlertDialog.Builder(this, R.style.RoundedDialog)
+            .setTitle("总帧数说明")
+            .setMessage("""显示的总帧数是理论最小值（文件大小 ÷ 每帧数据量）。
+
+由于 LT 码的随机编码特性，实际解码通常需要比最小值多 5-15% 的帧数，这是正常现象。
+
+进度条会根据实际解码情况实时更新。""")
+            .setPositiveButton("知道了", null)
+            .show()
     }
 
     private fun showProgressCardWaiting() {
@@ -415,10 +427,11 @@ class MainActivity : AppCompatActivity() {
                     statusText.text = "✅ 解码完成！"
                     progressTitle.text = "  解码完成"
                     progressBar.progress = 100
-                    progressPercent.text = "100% | 解码完成"
-                    resultFrameInfo.text = "100% | ${uniqueFrames} 帧解码完成"
+                    progressPercent.text = "100% | ${uniqueFrames}/${decoder.totalFrames().toInt()} 帧"
+                    resultFrameInfo.text = "100% | ${uniqueFrames}/${decoder.totalFrames().toInt()} 帧"
                     frameCountText.text = sf?.name ?: ""
                     overlayView.clear()
+                    dotResult.setColor("#4CAF50")
                     progressCard.visibility = View.GONE
                     resultPanel.visibility = View.VISIBLE
                     lastSavedFile = sf
