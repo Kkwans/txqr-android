@@ -156,29 +156,6 @@ func (d *Decoder) Reset() {
 	d.decodedChunks = 0
 }
 
-// PartialData returns whatever decoded bytes are available so far.
-// Used for file type detection before full decode completes.
-func (d *Decoder) PartialData() []byte {
-	if d.dataBytes != nil {
-		return d.dataBytes
-	}
-	if d.fd == nil {
-		return nil
-	}
-	partial := d.fd.Decode()
-	if partial != nil && len(partial) > 0 {
-		raw, err := base64.StdEncoding.DecodeString(string(partial))
-		if err != nil {
-			raw, err = base64.RawStdEncoding.DecodeString(string(partial))
-		}
-		if err == nil {
-			return raw
-		}
-		return partial
-	}
-	return nil
-}
-
 func (d *Decoder) validate(chunk string) error {
 	if chunk == "" || len(chunk) < 4 {
 		return fmt.Errorf("invalid frame: too short")

@@ -85,7 +85,6 @@ class MainActivity : AppCompatActivity() {
     private var newFrames = 0
     private var duplicateFrames = 0
     private var uniqueFrames = 0
-    private var detectedExt = ""
 
     private var currentCamera: Camera? = null
     private lateinit var scaleDetector: ScaleGestureDetector
@@ -435,16 +434,6 @@ class MainActivity : AppCompatActivity() {
             val curr = decoder.uniqueFrames().toInt()
             if (curr > prev) { newFrames++; uniqueFrames = curr } else { duplicateFrames++ }
 
-            // 尝试检测文件扩展名（解码中）
-            if (detectedExt.isEmpty()) {
-                try {
-                    val partial = decoder.partialData()
-                    if (partial != null && partial.size >= 4) {
-                        detectedExt = detectExtension(partial)
-                    }
-                } catch (_: Exception) {}
-            }
-
             runOnUiThread {
                 updateProgressDisplay()
                 if (decoder.isCompleted()) {
@@ -484,15 +473,9 @@ class MainActivity : AppCompatActivity() {
         progressBar.progress = progress
         progressTitle.text = "  正在解码"
 
-        // 文件信息：解码中尝试显示扩展名
+        // 文件信息：仅显示大小
         val sizeText = if (decoder.totalSize().toInt() > 0) formatSize(decoder.totalSize().toLong()) else ""
-        val extText = if (detectedExt.isNotEmpty()) "文件$detectedExt" else ""
-        fileInfo.text = when {
-            extText.isNotEmpty() && sizeText.isNotEmpty() -> "$extText · $sizeText"
-            extText.isNotEmpty() -> extText
-            sizeText.isNotEmpty() -> sizeText
-            else -> ""
-        }
+        fileInfo.text = sizeText
 
         progressPercent.text = "$progress% | $unique/$total 帧"
         decoderStatus.text = "解码器: 工作中 | 摄像头: ${if (currentCamera != null) "正常" else "未连接"}"
@@ -611,7 +594,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun resetForNext() {
         decoder.reset(); isStopped = false; isPaused = false; isScanning = false; isDecoding = false
-        totalFramesProcessed = 0; newFrames = 0; duplicateFrames = 0; uniqueFrames = 0; detectedExt = ""
+        totalFramesProcessed = 0; newFrames = 0; duplicateFrames = 0; uniqueFrames = 0
         resultPanel.visibility = View.GONE; overlayView.clear(); lastSavedFile = null
         stopBreathingAnimation()
         if (prefs.getBoolean("always_show_progress", true)) showProgressCardWaiting()
