@@ -242,19 +242,14 @@ class MainActivity : AppCompatActivity() {
             .setTitle("进度与帧数说明")
             .setMessage("""总帧数是理论最小值（文件大小 ÷ 每帧数据量）。
 
-由于 LT 码的随机编码特性，实际解码通常需要比最小值多 5-20% 的帧数，这是正常现象。
+由于 LT 码的随机编码特性，实际解码通常需要比最小值多 2-12% 的帧数，这是正常现象。
 
 进度规则：
 • 0-95%：按已扫描帧数 / 最小帧数线性增长
 • 95-99%：超过最小帧数后逐步增长
-  - 95% = 1.00 倍最小帧数
-  - 96% = 1.03 倍
-  - 97% = 1.07 倍
-  - 98% = 1.12 倍
-  - 99% = 1.20 倍
 • 100%：解码完成
 
-进度条会根据实际解码情况实时更新。""")
+只要没有到达 100%，就需要继续扫描二维码。卡点是扫描二维码的速度，而不是解码的速度，不存在需要等待解码的情况。""")
             .setPositiveButton("知道了", null)
             .show()
     }
@@ -481,8 +476,9 @@ class MainActivity : AppCompatActivity() {
         progressBar.progress = progress
         progressTitle.text = "  正在解码"
 
-        // 文件信息：仅显示大小
-        val sizeText = if (decoder.totalSize().toInt() > 0) formatSize(decoder.totalSize().toLong()) else ""
+        // 文件信息：估算实际大小（totalSize是base64编码大小，约4/3倍）
+        val estSize = if (decoder.totalSize().toInt() > 0) decoder.totalSize().toLong() * 3 / 4 else 0L
+        val sizeText = if (estSize > 0) "~${formatSize(estSize)}" else ""
         fileInfo.text = sizeText
 
         progressPercent.text = buildFrameText(progress, unique, total)
@@ -497,13 +493,13 @@ class MainActivity : AppCompatActivity() {
      * 构建帧行文本：已扫描帧数加粗，总帧数普通
      */
     private fun buildFrameText(progress: Int, unique: Int, total: Int): CharSequence {
-        val html = "$progress% | <b>$unique</b>/$total 帧"
+        val html = "$progress% | <b>$unique</b>/<font color='#AAAAAA'>$total</font> 帧"
         return Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY)
     }
 
     private fun formatSize(bytes: Long): String = when {
-        bytes >= 1024 * 1024 -> String.format("%.1f MB", bytes / 1024.0 / 1024.0)
-        bytes >= 1024 -> String.format("%.1f KB", bytes / 1024.0)
+        bytes >= 1024 * 1024 -> String.format("%.2f MB", bytes / 1024.0 / 1024.0)
+        bytes >= 1024 -> String.format("%.2f KB", bytes / 1024.0)
         else -> "$bytes B"
     }
 

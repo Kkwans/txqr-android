@@ -69,10 +69,6 @@ class SettingsActivity : AppCompatActivity() {
         }
         adapter.setDropDownViewResource(R.layout.spinner_dropdown_item)
         spinnerResolution.adapter = adapter
-        // 下拉菜单宽度与选择框一致
-        spinnerResolution.post {
-            spinnerResolution.dropDownWidth = spinnerResolution.width
-        }
         val currentIdx = RESOLUTION_VALUES.indexOf(prefs.getString(KEY_RESOLUTION, "640x480") ?: "640x480").coerceAtLeast(0)
         spinnerResolution.setSelection(currentIdx)
 

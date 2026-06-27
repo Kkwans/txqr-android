@@ -96,7 +96,7 @@ func (d *Decoder) DataBytes() []byte { return d.dataBytes }
 // Phase 1: 0-95% linear (frameCount / minChunks)
 // Phase 2: 95-99% gradual based on ratio beyond minChunks
 //
-// 95% = 1.00x, 96% = 1.03x, 97% = 1.07x, 98% = 1.12x, 99% = 1.20x
+// 95% = 1.00x, 96% = 1.02x, 97% = 1.05x, 98% = 1.08x, 99% = 1.12x
 func (d *Decoder) Progress() int {
 	if d.completed {
 		return 100
@@ -115,19 +115,19 @@ func (d *Decoder) Progress() int {
 	}
 	// Phase 2: 95-99% based on ratio
 	if d.frameCount > minChunks {
-		ratio100 := (d.frameCount-minChunks)*100/minChunks + 100 // 100 = 1.00x, 103 = 1.03x, etc.
+		ratio100 := (d.frameCount-minChunks)*100/minChunks + 100 // 100 = 1.00x, 102 = 1.02x, etc.
 		var bonus int
 		switch {
-		case ratio100 >= 120:
-			bonus = 4 // 99%
 		case ratio100 >= 112:
-			bonus = 3 + (ratio100-112)*1/(120-112) // 98-99%
-		case ratio100 >= 107:
-			bonus = 2 + (ratio100-107)*1/(112-107) // 97-98%
-		case ratio100 >= 103:
-			bonus = 1 + (ratio100-103)*1/(107-103) // 96-97%
+			bonus = 4 // 99%
+		case ratio100 >= 108:
+			bonus = 3 + (ratio100-108)*1/(112-108) // 98-99%
+		case ratio100 >= 105:
+			bonus = 2 + (ratio100-105)*1/(108-105) // 97-98%
+		case ratio100 >= 102:
+			bonus = 1 + (ratio100-102)*1/(105-102) // 96-97%
 		default:
-			bonus = (ratio100 - 100) * 1 / 3 // 95-96%
+			bonus = (ratio100 - 100) * 1 / 2 // 95-96%
 		}
 		p = 95 + bonus
 	}
