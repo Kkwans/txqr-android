@@ -5,6 +5,10 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.graphics.Typeface
+import android.text.SpannableString
+import android.text.Spannable
+import android.text.style.StyleSpan
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -386,8 +390,8 @@ class MainActivity : AppCompatActivity() {
     private fun createAnalyzer(scanner: com.google.mlkit.vision.barcode.BarcodeScanner): ImageAnalysis.Analyzer {
         return ImageAnalysis.Analyzer { imageProxy ->
             val alwaysShow = prefs.getBoolean("always_show_progress", false)
-            // 等待开始状态（未点击开始扫描按钮）→ 跳过分析
-            if ((alwaysShow && !isScanning) || isStopped) { imageProxy.close(); return@Analyzer }
+            // 未点击开始扫描按钮或已暂停 → 跳过分析
+            if (!isScanning || isStopped) { imageProxy.close(); return@Analyzer }
 
             @SuppressLint("UnsafeOptInUsageError")
             val mediaImage = imageProxy.image
@@ -444,8 +448,8 @@ class MainActivity : AppCompatActivity() {
                     statusText.text = "✅ 解码完成！"
                     progressTitle.text = "  解码完成"
                     progressBar.progress = 100
-                    progressPercent.text = "100% | ${uniqueFrames}/${decoder.totalFrames().toInt()} 帧"
-                    resultFrameInfo.text = "100% | ${uniqueFrames}/${decoder.totalFrames().toInt()} 帧"
+                    progressPercent.text = buildFrameText(100, uniqueFrames, decoder.totalFrames().toInt())
+                    resultFrameInfo.text = buildFrameText(100, uniqueFrames, decoder.totalFrames().toInt())
                     frameCountText.text = sf?.name ?: ""
                     overlayView.clear()
                     dotResult.setColor("#4CAF50")
@@ -477,12 +481,28 @@ class MainActivity : AppCompatActivity() {
         val sizeText = if (decoder.totalSize().toInt() > 0) formatSize(decoder.totalSize().toLong()) else ""
         fileInfo.text = sizeText
 
-        progressPercent.text = "$progress% | $unique/$total 帧"
+        progressPercent.text = buildFrameText(progress, unique, total)
         decoderStatus.text = "解码器: 工作中 | 摄像头: ${if (currentCamera != null) "正常" else "未连接"}"
         diagnosticInfo.text = "诊断: ${newFrames} 新帧 | ${duplicateFrames} 重复"
         statusText.text = "⏳ $progress% | $unique/$total 帧"
 
         updateScanAreaOffset()
+    }
+
+    /**
+     * 构建帧行文本：已扫描帧数加粗，总帧数普通，固定宽度排版
+     */
+    private fun buildFrameText(progress: Int, unique: Int, total: Int): CharSequence {
+        // 固定宽度格式：进度3位，帧数4位
+        val base = String.format("%3d%% | %4d / %4d 帧", progress, unique, total)
+        val ss = SpannableString(base)
+        // 已扫描帧数加粗
+        val uniqueStr = String.format("%4d", unique)
+        val uStart = base.indexOf(uniqueStr)
+        if (uStart >= 0) {
+            ss.setSpan(StyleSpan(Typeface.BOLD), uStart, uStart + uniqueStr.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        return ss
     }
 
     private fun formatSize(bytes: Long): String = when {
