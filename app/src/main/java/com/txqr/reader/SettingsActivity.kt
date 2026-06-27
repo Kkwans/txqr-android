@@ -89,7 +89,6 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
         spinnerResolution.adapter = adapter
-        spinnerResolution.dropDownWidth = android.view.ViewGroup.LayoutParams.WRAP_CONTENT
         val currentIdx = RESOLUTION_VALUES.indexOf(prefs.getString(KEY_RESOLUTION, "640x480") ?: "640x480").coerceAtLeast(0)
         spinnerResolution.setSelection(currentIdx)
 
