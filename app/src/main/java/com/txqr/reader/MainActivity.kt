@@ -79,12 +79,13 @@ class MainActivity : AppCompatActivity() {
     private var isStopped = false
     private var isPaused = false
     private var isScanning = false
-    private var isDecoding = false  // 是否已开始解码（扫描到二维码）
+    private var isDecoding = false
 
     private var totalFramesProcessed = 0
     private var newFrames = 0
     private var duplicateFrames = 0
     private var uniqueFrames = 0
+    private var detectedExt = ""
 
     private var currentCamera: Camera? = null
     private lateinit var scaleDetector: ScaleGestureDetector
@@ -160,12 +161,8 @@ class MainActivity : AppCompatActivity() {
         btnStop.setOnClickListener { togglePause() }
         btnStartScan.setOnClickListener { startScanningFromButton() }
         btnSettings.setOnClickListener { startActivity(Intent(this, SettingsActivity::class.java)) }
-        btnHelpTotalFrames.setOnClickListener {
-            showTotalFramesHelp()
-        }
-        btnHelpTotalFramesResult.setOnClickListener {
-            showTotalFramesHelp()
-        }
+        btnHelpTotalFrames.setOnClickListener { showTotalFramesHelp() }
+        btnHelpTotalFramesResult.setOnClickListener { showTotalFramesHelp() }
 
         setupGestures()
         applySettings()
@@ -176,7 +173,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Bug fix: 如果解码已完成，只显示结果面板，隐藏进度卡片
         if (decoder.isCompleted()) {
             progressCard.visibility = View.GONE
             resultPanel.visibility = View.VISIBLE
@@ -185,22 +181,29 @@ class MainActivity : AppCompatActivity() {
         applySettings()
     }
 
-
     private fun applySettings() {
         overlayView.setScanAreaVisible(prefs.getBoolean("show_overlay", true))
 
         val alwaysShow = prefs.getBoolean("always_show_progress", true)
         val showProgress = prefs.getBoolean("show_progress", true)
 
-        if (!isDecoding) {
-            // 非解码中状态（等待扫描、正在扫描但未扫到） → 是否展示取决于“始终显示进度卡片”
+        if (!isScanning) {
+            // 等待开始状态 → 始终显示进度卡片时显示
             if (alwaysShow && !decoder.isCompleted()) {
                 showProgressCardWaiting()
             } else {
                 progressCard.visibility = View.GONE
             }
+        } else if (!isDecoding) {
+            // 等待扫描状态（已点开始，未扫到二维码）
+            if (showProgress || alwaysShow) {
+                progressCard.visibility = View.VISIBLE
+                startBreathingAnimation("#FFC107")
+            } else {
+                progressCard.visibility = View.GONE
+            }
         } else {
-            // 解码中状态（已扫描到二维码） → 是否展示取决于“解码时显示进度卡片”
+            // 正在解码状态
             if (!showProgress) {
                 progressCard.visibility = View.GONE
             } else {
@@ -236,10 +239,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun showTotalFramesHelp() {
         androidx.appcompat.app.AlertDialog.Builder(this, R.style.RoundedDialog)
-            .setTitle("总帧数说明")
-            .setMessage("""显示的总帧数是理论最小值（文件大小 ÷ 每帧数据量）。
+            .setTitle("进度与帧数说明")
+            .setMessage("""总帧数是理论最小值（文件大小 ÷ 每帧数据量）。
 
 由于 LT 码的随机编码特性，实际解码通常需要比最小值多 5-15% 的帧数，这是正常现象。
+
+进度规则：
+• 0-90%：按已扫描帧数 / 最小帧数线性增长
+• 90-99%：超过最小帧数后逐步增长
+• 100%：解码完成
 
 进度条会根据实际解码情况实时更新。""")
             .setPositiveButton("知道了", null)
@@ -248,7 +256,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun showProgressCardWaiting() {
         progressCard.visibility = View.VISIBLE
-        progressTitle.text = "  等待扫描"
+        progressTitle.text = "  等待开始"
         progressPercent.text = "点击下方按钮开始扫描"
         progressBar.progress = 0
         decoderStatus.text = "解码器: 就绪 | 摄像头: 就绪"
@@ -267,14 +275,14 @@ class MainActivity : AppCompatActivity() {
         isPaused = false
         btnStartScan.visibility = View.GONE
         scanButtons.visibility = View.VISIBLE
-        progressTitle.text = "  正在扫描"
+        progressTitle.text = "  等待扫描"
         progressPercent.text = "等待二维码..."
         progressBar.progress = 0
         decoderStatus.text = "解码器: 就绪 | 摄像头: 正常"
         diagnosticInfo.text = "诊断: 0 新帧 | 0 重复"
         fileInfo.text = ""
         statusText.text = "扫描中..."
-        startBreathingAnimation("#4CAF50")
+        startBreathingAnimation("#FFC107")
         updateScanAreaOffset()
     }
 
@@ -297,8 +305,8 @@ class MainActivity : AppCompatActivity() {
                 progressTitle.text = "  正在解码"
                 startBreathingAnimation("#26C6DA")
             } else {
-                progressTitle.text = "  正在扫描"
-                startBreathingAnimation("#4CAF50")
+                progressTitle.text = "  等待扫描"
+                startBreathingAnimation("#FFC107")
             }
         }
     }
@@ -379,6 +387,7 @@ class MainActivity : AppCompatActivity() {
     private fun createAnalyzer(scanner: com.google.mlkit.vision.barcode.BarcodeScanner): ImageAnalysis.Analyzer {
         return ImageAnalysis.Analyzer { imageProxy ->
             val alwaysShow = prefs.getBoolean("always_show_progress", false)
+            // 等待开始状态（未点击开始扫描按钮）→ 跳过分析
             if ((alwaysShow && !isScanning) || isStopped) { imageProxy.close(); return@Analyzer }
 
             @SuppressLint("UnsafeOptInUsageError")
@@ -410,12 +419,31 @@ class MainActivity : AppCompatActivity() {
     private fun onQRCodeDetected(content: String) {
         if (decoder.isCompleted() || isStopped) return
         if (!isProcessing.compareAndSet(false, true)) return
-        isDecoding = true  // 标记已开始解码
+
+        // 首次扫到二维码 → 标记解码中，立即启动青色呼吸动画
+        if (!isDecoding) {
+            isDecoding = true
+            runOnUiThread {
+                progressTitle.text = "  正在解码"
+                startBreathingAnimation("#26C6DA")
+            }
+        }
+
         try {
             val prev = decoder.uniqueFrames().toInt()
             decoder.decodeChunk(content)
             val curr = decoder.uniqueFrames().toInt()
             if (curr > prev) { newFrames++; uniqueFrames = curr } else { duplicateFrames++ }
+
+            // 尝试检测文件扩展名（解码中）
+            if (detectedExt.isEmpty()) {
+                try {
+                    val partial = decoder.partialData()
+                    if (partial != null && partial.size >= 4) {
+                        detectedExt = detectExtension(partial)
+                    }
+                } catch (_: Exception) {}
+            }
 
             runOnUiThread {
                 updateProgressDisplay()
@@ -441,23 +469,6 @@ class MainActivity : AppCompatActivity() {
         finally { isProcessing.set(false) }
     }
 
-    private fun buildFrameText(progress: Int, unique: Int, total: Int): CharSequence {
-        val base = "$progress% | $unique/$total 帧"
-        val ss = android.text.SpannableString(base)
-        val uniqueStr = "$unique"
-        val uStart = base.indexOf(uniqueStr)
-        if (uStart >= 0) {
-            ss.setSpan(android.text.style.StyleSpan(android.graphics.Typeface.BOLD), uStart, uStart + uniqueStr.length, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-        }
-        val totalStr = "$total"
-        val slashIdx = base.indexOf('/')
-        val tStart = base.indexOf(totalStr, slashIdx)
-        if (tStart >= 0) {
-            ss.setSpan(android.text.style.ForegroundColorSpan(android.graphics.Color.argb(140, 255, 255, 255)), tStart, tStart + totalStr.length, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-        }
-        return ss
-    }
-
     private fun updateProgressDisplay() {
         val showP = prefs.getBoolean("show_progress", true)
         val always = prefs.getBoolean("always_show_progress", false)
@@ -472,14 +483,21 @@ class MainActivity : AppCompatActivity() {
         progressCard.visibility = View.VISIBLE
         progressBar.progress = progress
         progressTitle.text = "  正在解码"
-        progressPercent.text = buildFrameText(progress, unique, total)
-        fileInfo.text = if (decoder.totalSize().toInt() > 0) formatSize(decoder.totalSize().toLong()) else ""
+
+        // 文件信息：解码中尝试显示扩展名
+        val sizeText = if (decoder.totalSize().toInt() > 0) formatSize(decoder.totalSize().toLong()) else ""
+        val extText = if (detectedExt.isNotEmpty()) "文件$detectedExt" else ""
+        fileInfo.text = when {
+            extText.isNotEmpty() && sizeText.isNotEmpty() -> "$extText · $sizeText"
+            extText.isNotEmpty() -> extText
+            sizeText.isNotEmpty() -> sizeText
+            else -> ""
+        }
+
+        progressPercent.text = "$progress% | $unique/$total 帧"
         decoderStatus.text = "解码器: 工作中 | 摄像头: ${if (currentCamera != null) "正常" else "未连接"}"
         diagnosticInfo.text = "诊断: ${newFrames} 新帧 | ${duplicateFrames} 重复"
         statusText.text = "⏳ $progress% | $unique/$total 帧"
-
-        // 确保呼吸动画在运行（解码中用青色）
-        startBreathingAnimation("#26C6DA")
 
         updateScanAreaOffset()
     }
@@ -593,7 +611,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun resetForNext() {
         decoder.reset(); isStopped = false; isPaused = false; isScanning = false; isDecoding = false
-        totalFramesProcessed = 0; newFrames = 0; duplicateFrames = 0; uniqueFrames = 0
+        totalFramesProcessed = 0; newFrames = 0; duplicateFrames = 0; uniqueFrames = 0; detectedExt = ""
         resultPanel.visibility = View.GONE; overlayView.clear(); lastSavedFile = null
         stopBreathingAnimation()
         if (prefs.getBoolean("always_show_progress", true)) showProgressCardWaiting()

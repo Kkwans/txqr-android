@@ -93,8 +93,8 @@ func (d *Decoder) DataBytes() []byte { return d.dataBytes }
 
 // Progress returns decoding progress (0-100).
 // LT codes are rateless — actual frames needed > minChunks.
-// Phase 1: 0-95% linear (frameCount / minChunks)
-// Phase 2: 95-99% gradual (extra frames beyond minChunks)
+// Phase 1: 0-90% linear (frameCount / minChunks)
+// Phase 2: 90-99% gradual (extra frames beyond minChunks)
 func (d *Decoder) Progress() int {
 	if d.completed {
 		return 100
@@ -106,19 +106,19 @@ func (d *Decoder) Progress() int {
 	if minChunks == 0 {
 		return 0
 	}
-	// Phase 1: 0-95% linear growth
-	p := d.frameCount * 95 / minChunks
-	if p > 95 {
-		p = 95
+	// Phase 1: 0-90% linear growth
+	p := d.frameCount * 90 / minChunks
+	if p > 90 {
+		p = 90
 	}
-	// Phase 2: 95-99% gradual (after exceeding minChunks)
+	// Phase 2: 90-99% gradual (after exceeding minChunks)
 	if d.frameCount > minChunks {
 		extra := d.frameCount - minChunks
-		bonus := extra * 4 / minChunks
-		if bonus > 4 {
-			bonus = 4
+		bonus := extra * 9 / minChunks
+		if bonus > 9 {
+			bonus = 9
 		}
-		p = 95 + bonus
+		p = 90 + bonus
 	}
 	if p > 99 {
 		p = 99
@@ -154,6 +154,29 @@ func (d *Decoder) Reset() {
 	d.dataBytes = nil
 	d.frameCount = 0
 	d.decodedChunks = 0
+}
+
+// PartialData returns whatever decoded bytes are available so far.
+// Used for file type detection before full decode completes.
+func (d *Decoder) PartialData() []byte {
+	if d.dataBytes != nil {
+		return d.dataBytes
+	}
+	if d.fd == nil {
+		return nil
+	}
+	partial := d.fd.Decode()
+	if partial != nil && len(partial) > 0 {
+		raw, err := base64.StdEncoding.DecodeString(string(partial))
+		if err != nil {
+			raw, err = base64.RawStdEncoding.DecodeString(string(partial))
+		}
+		if err == nil {
+			return raw
+		}
+		return partial
+	}
+	return nil
 }
 
 func (d *Decoder) validate(chunk string) error {

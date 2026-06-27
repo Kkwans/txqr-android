@@ -74,7 +74,7 @@
     <LinearLayout
         android:id="@+id/progressCard"
         android:layout_width="match_parent"
-        android:layout_height="185dp"
+        android:layout_height="182dp"
         android:layout_gravity="bottom"
         android:layout_marginHorizontal="12dp"
         android:layout_marginBottom="24dp"
@@ -106,7 +106,7 @@
                 android:textColor="#FFFFFF"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                android:layout_marginStart="2dp" />
+                android:layout_marginStart="0dp" />
 
             <TextView
                 android:id="@+id/fileInfo"
@@ -230,7 +230,7 @@
     <LinearLayout
         android:id="@+id/resultPanel"
         android:layout_width="match_parent"
-        android:layout_height="185dp"
+        android:layout_height="182dp"
         android:layout_gravity="bottom"
         android:orientation="vertical"
         android:background="@drawable/bg_card_blur"
@@ -261,7 +261,7 @@
                 android:textColor="#FFFFFF"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                android:layout_marginStart="2dp" />
+                android:layout_marginStart="0dp" />
 
             <TextView
                 android:id="@+id/resultFileInfo"
