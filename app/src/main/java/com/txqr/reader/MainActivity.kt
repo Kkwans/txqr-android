@@ -5,11 +5,8 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
-import android.graphics.Typeface
-import android.text.SpannableString
-import android.text.Spannable
-import android.text.style.StyleSpan
 import android.net.Uri
+import android.text.Html
 import android.os.Bundle
 import android.os.Environment
 import android.provider.DocumentsContract
@@ -82,8 +79,8 @@ class MainActivity : AppCompatActivity() {
     private var lastSavedFile: File? = null
     private var isStopped = false
     private var isPaused = false
-    private var isScanning = false
-    private var isDecoding = false
+    @Volatile private var isScanning = false
+    @Volatile private var isDecoding = false
 
     private var totalFramesProcessed = 0
     private var newFrames = 0
@@ -245,11 +242,16 @@ class MainActivity : AppCompatActivity() {
             .setTitle("进度与帧数说明")
             .setMessage("""总帧数是理论最小值（文件大小 ÷ 每帧数据量）。
 
-由于 LT 码的随机编码特性，实际解码通常需要比最小值多 5-15% 的帧数，这是正常现象。
+由于 LT 码的随机编码特性，实际解码通常需要比最小值多 5-20% 的帧数，这是正常现象。
 
 进度规则：
-• 0-90%：按已扫描帧数 / 最小帧数线性增长
-• 90-99%：超过最小帧数后逐步增长
+• 0-95%：按已扫描帧数 / 最小帧数线性增长
+• 95-99%：超过最小帧数后逐步增长
+  - 95% = 1.00 倍最小帧数
+  - 96% = 1.03 倍
+  - 97% = 1.07 倍
+  - 98% = 1.12 倍
+  - 99% = 1.20 倍
 • 100%：解码完成
 
 进度条会根据实际解码情况实时更新。""")
@@ -406,6 +408,8 @@ class MainActivity : AppCompatActivity() {
                         } else if (!showOv) {
                             runOnUiThread { overlayView.clear() }
                         }
+                        // resetForNext 后 isScanning=false，跳过解码
+                        if (!isScanning) return@addOnSuccessListener
                         if (!isProcessing.get() && !decoder.isCompleted() && barcodes.isNotEmpty()) {
                             for (barcode in barcodes) {
                                 val content = barcode.rawValue ?: continue
@@ -490,19 +494,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * 构建帧行文本：已扫描帧数加粗，总帧数普通，固定宽度排版
+     * 构建帧行文本：已扫描帧数加粗，总帧数普通
      */
     private fun buildFrameText(progress: Int, unique: Int, total: Int): CharSequence {
-        // 固定宽度格式：进度3位，帧数4位
-        val base = String.format("%3d%% | %4d / %4d 帧", progress, unique, total)
-        val ss = SpannableString(base)
-        // 已扫描帧数加粗
-        val uniqueStr = String.format("%4d", unique)
-        val uStart = base.indexOf(uniqueStr)
-        if (uStart >= 0) {
-            ss.setSpan(StyleSpan(Typeface.BOLD), uStart, uStart + uniqueStr.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-        }
-        return ss
+        val html = "$progress% | <b>$unique</b>/$total 帧"
+        return Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY)
     }
 
     private fun formatSize(bytes: Long): String = when {

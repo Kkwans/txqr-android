@@ -60,35 +60,19 @@ class SettingsActivity : AppCompatActivity() {
         switchAlwaysShow = findViewById(R.id.switchAlwaysShowProgress)
 
         // 设置分辨率下拉框
-        val adapter = object : ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, RESOLUTION_LABELS) {
-            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-                val view = super.getView(position, convertView, parent) as TextView
-                view.textSize = 14f
-                view.setTextColor(resources.getColor(R.color.primary, null))
-                view.gravity = android.view.Gravity.CENTER
-                view.setPadding(0, 0, 0, 0)
-                return view
-            }
-
+        val adapter = object : ArrayAdapter<String>(this, R.layout.spinner_item, RESOLUTION_LABELS) {
             override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
                 val view = super.getDropDownView(position, convertView, parent) as TextView
-                view.textSize = 14f
                 view.setTextColor(resources.getColor(android.R.color.black, null))
-                val padH = (16 * resources.displayMetrics.density).toInt()
-                val padV = (14 * resources.displayMetrics.density).toInt()
-                view.setPadding(padH, padV, padH, padV)
-                view.setBackgroundColor(resources.getColor(android.R.color.white, null))
-                view.isSingleLine = true
-                view.ellipsize = null
-                view.gravity = android.view.Gravity.CENTER
-                view.layoutParams = android.widget.AbsListView.LayoutParams(
-                    android.widget.AbsListView.LayoutParams.MATCH_PARENT,
-                    android.widget.AbsListView.LayoutParams.WRAP_CONTENT
-                )
                 return view
             }
         }
+        adapter.setDropDownViewResource(R.layout.spinner_dropdown_item)
         spinnerResolution.adapter = adapter
+        // 下拉菜单宽度与选择框一致
+        spinnerResolution.post {
+            spinnerResolution.dropDownWidth = spinnerResolution.width
+        }
         val currentIdx = RESOLUTION_VALUES.indexOf(prefs.getString(KEY_RESOLUTION, "640x480") ?: "640x480").coerceAtLeast(0)
         spinnerResolution.setSelection(currentIdx)
 

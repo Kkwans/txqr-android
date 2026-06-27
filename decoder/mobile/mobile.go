@@ -93,8 +93,10 @@ func (d *Decoder) DataBytes() []byte { return d.dataBytes }
 
 // Progress returns decoding progress (0-100).
 // LT codes are rateless — actual frames needed > minChunks.
-// Phase 1: 0-90% linear (frameCount / minChunks)
-// Phase 2: 90-99% gradual (extra frames beyond minChunks)
+// Phase 1: 0-95% linear (frameCount / minChunks)
+// Phase 2: 95-99% gradual based on ratio beyond minChunks
+//
+// 95% = 1.00x, 96% = 1.03x, 97% = 1.07x, 98% = 1.12x, 99% = 1.20x
 func (d *Decoder) Progress() int {
 	if d.completed {
 		return 100
@@ -106,19 +108,28 @@ func (d *Decoder) Progress() int {
 	if minChunks == 0 {
 		return 0
 	}
-	// Phase 1: 0-90% linear growth
-	p := d.frameCount * 90 / minChunks
-	if p > 90 {
-		p = 90
+	// Phase 1: 0-95% linear growth
+	p := d.frameCount * 95 / minChunks
+	if p > 95 {
+		p = 95
 	}
-	// Phase 2: 90-99% gradual (after exceeding minChunks)
+	// Phase 2: 95-99% based on ratio
 	if d.frameCount > minChunks {
-		extra := d.frameCount - minChunks
-		bonus := extra * 9 / minChunks
-		if bonus > 9 {
-			bonus = 9
+		ratio100 := (d.frameCount-minChunks)*100/minChunks + 100 // 100 = 1.00x, 103 = 1.03x, etc.
+		var bonus int
+		switch {
+		case ratio100 >= 120:
+			bonus = 4 // 99%
+		case ratio100 >= 112:
+			bonus = 3 + (ratio100-112)*1/(120-112) // 98-99%
+		case ratio100 >= 107:
+			bonus = 2 + (ratio100-107)*1/(112-107) // 97-98%
+		case ratio100 >= 103:
+			bonus = 1 + (ratio100-103)*1/(107-103) // 96-97%
+		default:
+			bonus = (ratio100 - 100) * 1 / 3 // 95-96%
 		}
-		p = 90 + bonus
+		p = 95 + bonus
 	}
 	if p > 99 {
 		p = 99
