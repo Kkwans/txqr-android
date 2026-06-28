@@ -13,7 +13,6 @@ import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.view.ViewGroup
 import android.widget.AdapterView
-import android.widget.CheckedTextView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.TextView
@@ -60,14 +59,15 @@ class SettingsActivity : AppCompatActivity() {
         switchShowProgress = findViewById(R.id.switchShowProgress)
         switchAlwaysShow = findViewById(R.id.switchAlwaysShowProgress)
 
-        // 设置分辨率下拉框 - 使用simple_spinner_item去掉checkMark，post强制居中
-        val adapter = object : ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, RESOLUTION_LABELS) {
+        // 设置分辨率下拉框
+        val adapter = object : ArrayAdapter<String>(this, R.layout.spinner_item, RESOLUTION_LABELS) {
             override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
                 val view = super.getView(position, convertView, parent) as TextView
-                // 去掉checkMark占位
-                if (view is android.widget.CheckedTextView) {
-                    view.checkMark = null
-                }
+                // 强制MATCH_PARENT宽度，否则Spinner内部覆盖为WRAP_CONTENT导致居中无效
+                view.layoutParams = android.widget.AbsListView.LayoutParams(
+                    android.widget.AbsListView.LayoutParams.MATCH_PARENT,
+                    android.widget.AbsListView.LayoutParams.WRAP_CONTENT
+                )
                 view.gravity = android.view.Gravity.CENTER
                 view.textAlignment = View.TEXT_ALIGNMENT_CENTER
                 view.setTextColor(resources.getColor(R.color.primary, null))
@@ -87,6 +87,7 @@ class SettingsActivity : AppCompatActivity() {
         // 下拉菜单宽度与选择框一致，偏移对齐
         spinnerResolution.post {
             spinnerResolution.dropDownWidth = spinnerResolution.width
+            // bg_spinner 左侧 padding 12dp 导致下拉偏右，向左补偿
             val bgPadding = (12 * resources.displayMetrics.density).toInt()
             spinnerResolution.dropDownHorizontalOffset = -bgPadding
         }
