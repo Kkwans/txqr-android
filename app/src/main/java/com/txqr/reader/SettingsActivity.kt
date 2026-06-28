@@ -60,20 +60,15 @@ class SettingsActivity : AppCompatActivity() {
         switchAlwaysShow = findViewById(R.id.switchAlwaysShowProgress)
 
         // 设置分辨率下拉框
-        val adapter = object : ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, RESOLUTION_LABELS) {
+        val adapter = object : ArrayAdapter<String>(this, R.layout.spinner_item, RESOLUTION_LABELS) {
             override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-                // 手动创建TextView，避免simple_spinner_item内部布局覆盖gravity
-                val tv = TextView(this@SettingsActivity)
-                tv.text = getItem(position)
-                tv.textSize = 14f
-                tv.setTextColor(resources.getColor(R.color.primary, null))
-                tv.gravity = android.view.Gravity.CENTER
-                tv.textAlignment = View.TEXT_ALIGNMENT_CENTER
-                tv.layoutParams = android.widget.AbsListView.LayoutParams(
-                    android.widget.AbsListView.LayoutParams.MATCH_PARENT,
-                    android.widget.AbsListView.LayoutParams.MATCH_PARENT
-                )
-                return tv
+                val view = super.getView(position, convertView, parent) as TextView
+                // 强制居中，覆盖任何内部布局设置
+                view.gravity = android.view.Gravity.CENTER
+                view.textAlignment = View.TEXT_ALIGNMENT_CENTER
+                // 确保textColor正确
+                view.setTextColor(resources.getColor(R.color.primary, null))
+                return view
             }
 
             override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
