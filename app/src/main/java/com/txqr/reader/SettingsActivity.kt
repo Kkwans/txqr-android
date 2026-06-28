@@ -59,15 +59,14 @@ class SettingsActivity : AppCompatActivity() {
         switchShowProgress = findViewById(R.id.switchShowProgress)
         switchAlwaysShow = findViewById(R.id.switchAlwaysShowProgress)
 
-        // 设置分辨率下拉框
-        val adapter = object : ArrayAdapter<String>(this, R.layout.spinner_item, RESOLUTION_LABELS) {
+        // 设置分辨率下拉框 - 使用simple_spinner_item去掉checkMark占位
+        val adapter = object : ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, RESOLUTION_LABELS) {
             override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
                 val view = super.getView(position, convertView, parent) as TextView
-                // 强制MATCH_PARENT宽度，否则Spinner内部覆盖为WRAP_CONTENT导致居中无效
-                view.layoutParams = android.widget.AbsListView.LayoutParams(
-                    android.widget.AbsListView.LayoutParams.MATCH_PARENT,
-                    android.widget.AbsListView.LayoutParams.WRAP_CONTENT
-                )
+                // 去掉checkMark占位
+                if (view is android.widget.CheckedTextView) {
+                    view.setCheckMarkDrawable(null)
+                }
                 view.gravity = android.view.Gravity.CENTER
                 view.textAlignment = View.TEXT_ALIGNMENT_CENTER
                 view.setTextColor(resources.getColor(R.color.primary, null))
