@@ -62,20 +62,18 @@ class SettingsActivity : AppCompatActivity() {
         // 设置分辨率下拉框
         val adapter = object : ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, RESOLUTION_LABELS) {
             override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-                // 用FrameLayout包装TextView强制居中，避免Spinner内部布局覆盖gravity
-                val container = android.widget.FrameLayout(this@SettingsActivity)
+                // 手动创建TextView，避免simple_spinner_item内部布局覆盖gravity
                 val tv = TextView(this@SettingsActivity)
                 tv.text = getItem(position)
                 tv.textSize = 14f
                 tv.setTextColor(resources.getColor(R.color.primary, null))
                 tv.gravity = android.view.Gravity.CENTER
                 tv.textAlignment = View.TEXT_ALIGNMENT_CENTER
-                tv.layoutParams = android.widget.FrameLayout.LayoutParams(
-                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
-                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT
+                tv.layoutParams = android.widget.AbsListView.LayoutParams(
+                    android.widget.AbsListView.LayoutParams.MATCH_PARENT,
+                    android.widget.AbsListView.LayoutParams.MATCH_PARENT
                 )
-                container.addView(tv)
-                return container
+                return tv
             }
 
             override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
