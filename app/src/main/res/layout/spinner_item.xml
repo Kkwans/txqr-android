@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center"
+    android:textAlignment="center"
     android:textSize="14sp"
     android:textColor="#1976D2"
     android:singleLine="true" />
