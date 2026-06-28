@@ -75,8 +75,11 @@ class OverlayView @JvmOverloads constructor(
 
     private fun drawScanArea(canvas: Canvas) {
         val cw = width.toFloat() / 2f
-        val ch = height.toFloat() / 2f - scanAreaOffsetY  // 上移
-        val size = minOf(width, height).toFloat() * 0.65f
+        // 下移约 0.5cm (约 20dp)
+        val baseDownOffset = 20f * resources.displayMetrics.density
+        val ch = height.toFloat() / 2f - scanAreaOffsetY + baseDownOffset
+        // 边长增大 1/3: 0.65 * 4/3 ≈ 0.867
+        val size = minOf(width, height).toFloat() * 0.867f
         val l = cw - size / 2f; val t = ch - size / 2f; val r = l + size; val b = t + size
 
         val maskPaint = Paint().apply { color = Color.parseColor("#33000000"); style = Paint.Style.FILL }
