@@ -60,10 +60,11 @@ class SettingsActivity : AppCompatActivity() {
         switchAlwaysShow = findViewById(R.id.switchAlwaysShowProgress)
 
         // 设置分辨率下拉框
-        val adapter = object : ArrayAdapter<String>(this, R.layout.spinner_item, RESOLUTION_LABELS) {
+        val adapter = object : ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, RESOLUTION_LABELS) {
             override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
                 val view = super.getView(position, convertView, parent) as TextView
                 view.gravity = android.view.Gravity.CENTER
+                view.textAlignment = View.TEXT_ALIGNMENT_CENTER
                 return view
             }
 
@@ -71,6 +72,7 @@ class SettingsActivity : AppCompatActivity() {
                 val view = super.getDropDownView(position, convertView, parent) as TextView
                 view.setTextColor(resources.getColor(android.R.color.black, null))
                 view.gravity = android.view.Gravity.CENTER
+                view.textAlignment = View.TEXT_ALIGNMENT_CENTER
                 return view
             }
         }
