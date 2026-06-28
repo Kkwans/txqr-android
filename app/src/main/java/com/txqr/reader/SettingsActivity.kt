@@ -61,17 +61,27 @@ class SettingsActivity : AppCompatActivity() {
 
         // 设置分辨率下拉框
         val adapter = object : ArrayAdapter<String>(this, R.layout.spinner_item, RESOLUTION_LABELS) {
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = super.getView(position, convertView, parent) as TextView
+                view.gravity = android.view.Gravity.CENTER
+                return view
+            }
+
             override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
                 val view = super.getDropDownView(position, convertView, parent) as TextView
                 view.setTextColor(resources.getColor(android.R.color.black, null))
+                view.gravity = android.view.Gravity.CENTER
                 return view
             }
         }
         adapter.setDropDownViewResource(R.layout.spinner_dropdown_item)
         spinnerResolution.adapter = adapter
-        // 下拉菜单宽度与选择框一致
+        // 下拉菜单宽度与选择框一致，偏移对齐
         spinnerResolution.post {
             spinnerResolution.dropDownWidth = spinnerResolution.width
+            // bg_spinner 左侧 padding 12dp 导致下拉偏右，向左补偿
+            val bgPadding = (12 * resources.displayMetrics.density).toInt()
+            spinnerResolution.dropDownHorizontalOffset = -bgPadding
         }
         val currentIdx = RESOLUTION_VALUES.indexOf(prefs.getString(KEY_RESOLUTION, "640x480") ?: "640x480").coerceAtLeast(0)
         spinnerResolution.setSelection(currentIdx)
