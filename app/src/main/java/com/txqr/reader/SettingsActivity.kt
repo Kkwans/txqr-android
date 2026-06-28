@@ -63,10 +63,13 @@ class SettingsActivity : AppCompatActivity() {
         val adapter = object : ArrayAdapter<String>(this, R.layout.spinner_item, RESOLUTION_LABELS) {
             override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
                 val view = super.getView(position, convertView, parent) as TextView
-                // 强制居中，覆盖任何内部布局设置
+                // 强制MATCH_PARENT宽度，否则Spinner内部覆盖为WRAP_CONTENT导致居中无效
+                view.layoutParams = android.widget.AbsListView.LayoutParams(
+                    android.widget.AbsListView.LayoutParams.MATCH_PARENT,
+                    android.widget.AbsListView.LayoutParams.WRAP_CONTENT
+                )
                 view.gravity = android.view.Gravity.CENTER
                 view.textAlignment = View.TEXT_ALIGNMENT_CENTER
-                // 确保textColor正确
                 view.setTextColor(resources.getColor(R.color.primary, null))
                 return view
             }
