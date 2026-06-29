@@ -142,7 +142,7 @@ class SettingsActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btnOpenSaveDir).setOnClickListener { openSavedDir() }
         findViewById<LinearLayout>(R.id.saveDirRow).setOnClickListener { chooseDirectory() }
         findViewById<ImageButton>(R.id.btnBack).setOnClickListener { finish() }
-        findViewById<TextView>(R.id.tvGithub).setOnClickListener { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Kkwans/txqr-android"))) }
+        findViewById<TextView>(R.id.tvGithub).setOnClickListener { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Kkwans/txqr-reader-android"))) }
     }
 
     private fun updateShowProgressState() {
