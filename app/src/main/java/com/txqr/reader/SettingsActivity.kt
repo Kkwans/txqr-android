@@ -59,14 +59,10 @@ class SettingsActivity : AppCompatActivity() {
         switchShowProgress = findViewById(R.id.switchShowProgress)
         switchAlwaysShow = findViewById(R.id.switchAlwaysShowProgress)
 
-        // 设置分辨率下拉框 - 使用simple_spinner_item去掉checkMark占位
-        val adapter = object : ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, RESOLUTION_LABELS) {
+        // 设置分辨率下拉框
+        val adapter = object : ArrayAdapter<String>(this, R.layout.spinner_item, RESOLUTION_LABELS) {
             override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
                 val view = super.getView(position, convertView, parent) as TextView
-                // 去掉checkMark占位
-                if (view is android.widget.CheckedTextView) {
-                    view.setCheckMarkDrawable(null)
-                }
                 view.gravity = android.view.Gravity.CENTER
                 view.textAlignment = View.TEXT_ALIGNMENT_CENTER
                 view.setTextColor(resources.getColor(R.color.primary, null))
@@ -96,20 +92,9 @@ class SettingsActivity : AppCompatActivity() {
         spinnerResolution.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
                 prefs.edit().putString(KEY_RESOLUTION, RESOLUTION_VALUES[position]).apply()
-                // 在Spinner完成布局后强制居中
-                (view as? TextView)?.let { tv ->
-                    tv.gravity = android.view.Gravity.CENTER
-                    tv.textAlignment = View.TEXT_ALIGNMENT_CENTER
-                }
             }
             override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
         })
-        // 初始选中项也强制居中
-        spinnerResolution.post {
-            val selectedView = spinnerResolution.selectedView as? TextView
-            selectedView?.gravity = android.view.Gravity.CENTER
-            selectedView?.textAlignment = View.TEXT_ALIGNMENT_CENTER
-        }
 
         updateDirDisplay()
 
