@@ -129,7 +129,7 @@ class SettingsActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.btnHelpOverlay).setOnClickListener { showHelp("扫描区域提示", "在画面中央显示扫描参考框和暗色遮罩。关闭后不再显示。") }
         findViewById<TextView>(R.id.btnHelpProgress).setOnClickListener { showHelp("解码时显示进度卡片", "解码过程中在底部显示详细进度信息。开启「始终显示」时自动启用。") }
         findViewById<TextView>(R.id.btnHelpAlwaysShow).setOnClickListener { showHelp("始终显示进度卡片", "进入软件即显示进度卡片，点击「开始扫描」按钮才开始扫描。\n\n开启后「解码时显示进度卡片」将自动启用。") }
-        findViewById<TextView>(R.id.btnHelpResolution).setOnClickListener { showHelp("分析分辨率", "相机分析二维码的分辨率。\n\n• 480p: 最快，适合近距离\n• 720p: 均衡\n• 1080p: 最准，适合远距离\n• 1440p: 超清，耗电更多") }
+        findViewById<TextView>(R.id.btnHelpResolution).setOnClickListener { showHelp("分析分辨率", "相机分析二维码的分辨率。\n\n• 480p: 最快，适合近距离\n• 720p: 均衡，日常使用推荐\n• 1080p: 最准，适合远距离\n• 1440p: 超清，耗电更多") }
 
         // 设置项名称也能点击触发帮助弹窗
         findViewById<TextView>(R.id.tvQrOnly).setOnClickListener { showHelp("仅扫描 QR 码", "开启后只识别 QR 码格式，忽略其他条形码。建议保持开启。") }
@@ -137,7 +137,7 @@ class SettingsActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.tvOverlay).setOnClickListener { showHelp("扫描区域提示", "在画面中央显示扫描参考框和暗色遮罩。关闭后不再显示。") }
         findViewById<TextView>(R.id.tvProgressLabel).setOnClickListener { showHelp("解码时显示进度卡片", "解码过程中在底部显示详细进度信息。开启「始终显示」时自动启用。") }
         findViewById<TextView>(R.id.tvAlwaysShowLabel).setOnClickListener { showHelp("始终显示进度卡片", "进入软件即显示进度卡片，点击「开始扫描」按钮才开始扫描。\n\n开启后「解码时显示进度卡片」将自动启用。") }
-        findViewById<TextView>(R.id.tvResolutionLabel).setOnClickListener { showHelp("分析分辨率", "相机分析二维码的分辨率。\n\n• 480p: 最快，适合近距离\n• 720p: 均衡\n• 1080p: 最准，适合远距离\n• 1440p: 超清，耗电更多") }
+        findViewById<TextView>(R.id.tvResolutionLabel).setOnClickListener { showHelp("分析分辨率", "相机分析二维码的分辨率。\n\n• 480p: 最快，适合近距离\n• 720p: 均衡，日常使用推荐\n• 1080p: 最准，适合远距离\n• 1440p: 超清，耗电更多") }
 
         findViewById<Button>(R.id.btnOpenSaveDir).setOnClickListener { openSavedDir() }
         findViewById<LinearLayout>(R.id.saveDirRow).setOnClickListener { chooseDirectory() }
