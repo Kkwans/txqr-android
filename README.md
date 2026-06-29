@@ -7,9 +7,11 @@
 - 📷 摄像头实时扫描动态二维码
 - 🔓 自动解码 txqr 协议（LT codes / fountain codes）
 - 📁 自动识别文件类型（30+ 格式）
-- 💾 保存到 `/Download/TXQR/` 目录
+- 💾 自动保存文件（支持自定义保存目录）
 - 📂 一键打开文件所在目录
 - 🔄 支持连续解码多个文件
+- 🎯 实时进度显示（帧数、百分比、文件大小）
+- ⚙️ 可配置扫描分辨率（480p / 720p / 1080p / 1440p）
 
 ## 支持的文件格式
 
@@ -38,10 +40,18 @@ mp4, mp3, wav, flv, avi, mkv, exe, elf, apk
 2. **安卓端**：
    - 安装 TXQR 接收器 APK
    - 打开 App，允许摄像头权限
+   - 点击"开始扫描"按钮
    - 将摄像头对准 Mac 屏幕上播放的二维码动画
-   - 等待解码完成
-   - 点击"📂 打开目录"查看文件
+   - 实时查看解码进度
+   - 解码完成后点击"📂 打开目录"查看文件
    - 点击"🔄 继续扫描"解码下一个文件
+
+## 设置
+
+- **分析分辨率**：480p（最快）/ 720p（均衡，日常使用推荐）/ 1080p（最准）/ 1440p（超清）
+- **保存目录**：默认 `/Download/TXQR/`，支持自定义
+- **进度卡片**：可配置始终显示或仅解码时显示
+- **扫描区域提示**：显示扫描参考框
 
 ## 文件命名
 
@@ -68,10 +78,14 @@ txqr-android/
 │   └── src/main/
 │       ├── AndroidManifest.xml
 │       ├── java/com/txqr/reader/
-│       │   ├── MainActivity.kt      # 主界面
-│       │   └── QRCodeAnalyzer.kt    # QR 码识别
+│       │   ├── MainActivity.kt      # 主界面 + 扫描逻辑
+│       │   ├── SettingsActivity.kt  # 设置页面
+│       │   ├── OverlayView.kt       # 扫描区域叠加层
+│       │   └── BreathingDotView.kt  # 呼吸动画圆点
 │       └── res/
-│           ├── layout/activity_main.xml
+│           ├── layout/
+│           │   ├── activity_main.xml
+│           │   └── activity_settings.xml
 │           └── xml/file_paths.xml
 ├── decoder/                      # Go txqr 解码器
 │   ├── go.mod
