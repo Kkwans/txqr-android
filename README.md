@@ -58,6 +58,38 @@ mp4, mp3, wav, flv, avi, mkv, exe, elf, apk
 解码后的文件自动命名为 `文件1.扩展名`、`文件2.扩展名`...
 扩展名通过文件头魔数自动识别，确保文件可直接使用。
 
+## 发送端（TXQR 编码工具）
+
+本 App 是接收端，需要配合 [txqr](https://github.com/divan/txqr) 发送端使用。
+
+### 快速入门
+
+1. **安装发送端**（Windows / macOS / Linux 通用）：
+   ```bash
+   git clone https://github.com/divan/txqr.git && cd txqr
+   go build -o gif ./cmd/txqr-gif
+   ```
+
+2. **生成二维码 GIF**：
+   ```bash
+   gif -split 1000 -fps 10 -o output.gif yourfile.zip
+   ```
+
+3. **在电脑上播放 GIF**，用本 App 扫描即可接收文件。
+
+### 常用参数速查
+
+| 参数 | 说明 | 推荐值 |
+|------|------|--------|
+| `-split` | 每帧数据字节数 | 小文件 300-450，大文件 600-1000 |
+| `-fps` | 每秒帧数 | 5-10（越高越快，但丢帧风险增大） |
+| `-o` | 输出文件路径 | - |
+| `-size` | GIF 画布尺寸（px） | 默认 600，大文件建议 800-1000 |
+
+> 💡 **调参口诀**：扫不上 → 先降 split → 再降 fps；太慢了 → 先加 fps → 再加 split
+
+📖 **完整使用手册**（含参数详解、故障排除、多平台适配）：[docs/TXQR-Usage-Guide.md](docs/TXQR-Usage-Guide.md)
+
 ## 编译
 
 ```bash
